@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:gravity="center"
+    android:padding="16dp">
+    <ImageView
+        android:id="@+id/icon"
+        android:src="@drawable/ic_done_white_48dp"
+        android:visibility="invisible"
+        android:layout_width="20dp"
+        android:layout_height="20dp" />
+</LinearLayout>

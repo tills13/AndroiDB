@@ -1,0 +1,63 @@
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipe_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="ca.sbstn.dbtest.activity.DatabaseActivity">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="ca.sbstn.dbtest.activity.RowInspectorActivity">
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:textSize="@dimen/title_text_size"
+                android:textColor="@color/grey_400"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/pkeys_title"/>
+
+            <TableLayout
+                android:id="@+id/primary_keys"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:stretchColumns="*"
+                android:orientation="vertical" />
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:textSize="@dimen/title_text_size"
+                android:textColor="@color/grey_400"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/columns_title"/>
+
+            <LinearLayout
+                android:id="@+id/columns_container"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:textSize="@dimen/title_text_size"
+                android:textColor="@color/grey_400"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/fkeys_title"/>
+
+            <LinearLayout
+                android:id="@+id/fkeys_container"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </ScrollView>
+</android.support.v4.widget.SwipeRefreshLayout>

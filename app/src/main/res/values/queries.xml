@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="db_query_fetch_databases">
+        SELECT pgd.datname AS name, pgsh.description AS comment, pg_catalog.pg_get_userbyid(pgd.datdba) AS owner FROM pg_database pgd
+	        LEFT JOIN pg_shdescription pgsh on pgd.oid = pgsh.objoid
+        WHERE pgd.datAllowConn ORDER BY pgd.datName
+    </string>
+
+
+
+
+    <string name="db_query_foreign_keys" formatted="false">
+        SELECT
+            tc.constraint_name, tc.table_name, kcu.column_name,
+            ccu.table_name AS foreign_table_name,
+            ccu.column_name AS foreign_column_name
+        FROM
+            information_schema.table_constraints AS tc
+            JOIN information_schema.key_column_usage AS kcu
+              ON tc.constraint_name = kcu.constraint_name
+            JOIN information_schema.constraint_column_usage AS ccu
+              ON ccu.constraint_name = tc.constraint_name
+        WHERE constraint_type = \'FOREIGN KEY\' AND tc.table_name=\'%s\';
+    </string>
+
+    <string name="db_query_fetch_all_fkey" formatted="false">SELECT * FROM %s a WHERE a.%s=%s.%s;</string>
+    <string name="db_query_fetch_all_fkey2" formatted="false">SELECT * FROM %s a WHERE a.%s=\'%s\';</string>
+
+    <string name="db_query_fetch_tables_for_schema" formatted="false">
+        SELECT
+            rel.relname,
+            rel.relkind,
+            rel.reltuples,
+            coalesce(rel.relpages,0) + coalesce(toast.relpages,0) AS num_total_pages,
+            SUM(ind.relpages) AS index_pages,
+            pg_roles.rolname AS owner
+        FROM pg_class rel
+            left join pg_class toast on (toast.oid = rel.reltoastrelid)
+            left join pg_index on (indrelid=rel.oid)
+            left join pg_class ind on (ind.oid = indexrelid)
+            join pg_namespace on (rel.relnamespace =pg_namespace.oid )
+            left join pg_roles on ( rel.relowner = pg_roles.oid )
+        WHERE rel.relkind IN (\'r\',\'v\',\'m\',\'f\') AND nspname = \'%s\'
+        GROUP BY
+            rel.relname,
+            rel.relkind,
+            rel.reltuples,
+            coalesce(rel.relpages,0) + coalesce(toast.relpages,0),
+            pg_roles.rolname;
+    </string>
+
+    <string name="db_query_fetch_table_info" formatted="false">
+        SELECT
+            oid,
+            obj_description(oid, \'pg_class\') AS comment,
+            case when reltablespace!=0
+                then (select spcname from pg_tablespace where pg_tablespace.oid=reltablespace)
+                else (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname=\'%s\')
+            end as tablespace,
+            pg_get_viewdef(oid,true) AS viewdef
+            FROM pg_class
+            WHERE oid = \'"%s"."%s"\'::regclass::oid;
+    </string>
+
+</resources>
