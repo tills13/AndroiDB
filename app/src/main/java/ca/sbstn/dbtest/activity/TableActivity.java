@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 
 import ca.sbstn.dbtest.R;
+import ca.sbstn.dbtest.callback.SQLExecuteCallback;
+import ca.sbstn.dbtest.sql.SQLResult;
 import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.task.ExecuteQueryTask;
 import ca.sbstn.dbtest.task.FetchTableKeysTask;
@@ -44,6 +46,7 @@ public class TableActivity extends Activity {
         tableKeysTask.execute(this.table);
 
         executeQueryTask = new ExecuteQueryTask(this, this.table.getDatabase(), this.table, this.tableLayout);
+        executeQueryTask.setCallback(new SetRowCountCallback(ab));
         executeQueryTask.execute(this.table.getQuery());
 
         this.nextButton = (Button) this.findViewById(R.id.next);
@@ -102,5 +105,21 @@ public class TableActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    class SetRowCountCallback extends SQLExecuteCallback {
+        ActionBar actionBar;
+
+        public SetRowCountCallback(ActionBar actionBar) {
+            this.actionBar = actionBar;
+        }
+
+        @Override
+        public void onError(Exception e) {}
+
+        @Override
+        public void onSuccess(SQLResult results) {
+            //this.actionBar.setSubtitle(results.getRow(0).getString("count"));
+        }
     }
 }

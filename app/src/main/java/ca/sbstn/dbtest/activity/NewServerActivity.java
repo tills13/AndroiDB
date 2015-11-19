@@ -3,17 +3,13 @@ package ca.sbstn.dbtest.activity;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.SpannableString;
 import android.text.TextWatcher;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -110,8 +106,6 @@ public class NewServerActivity extends Activity {
                 testConnection();
             }
         });
-
-
 
         if (this.getIntent().hasExtra("server")) {
             this.server = (Server) this.getIntent().getSerializableExtra("server");
@@ -253,6 +247,7 @@ public class NewServerActivity extends Activity {
 
                     String url = String.format("jdbc:postgresql://%s:%s/%s", host, mPort, defaultDatabase.equals("") ? "postgres" : defaultDatabase);
                     Connection connection = DriverManager.getConnection(url, user, password);
+                    connection.close();
                 } catch (Exception e) {
                     this.exception = e;
                     return false;

@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
 import ca.sbstn.dbtest.sql.Key;
 import ca.sbstn.dbtest.sql.Server;
@@ -23,9 +24,14 @@ public class FetchTableKeysTask extends AsyncTask<Table, Void, Void> {
     public static String TAG = "FETCHTABLEKEYSTASK";
 
     private Context context;
+    private SQLExecuteCallback callback;
 
     public FetchTableKeysTask(Context context) {
         this.context = context;
+    }
+    public FetchTableKeysTask(Context context, SQLExecuteCallback callback) {
+        this.context = context;
+        this.callback = callback;
     }
 
     @Override
@@ -69,5 +75,7 @@ public class FetchTableKeysTask extends AsyncTask<Table, Void, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
+
+        if (this.callback != null) this.callback.onSuccess(null);
     }
 }

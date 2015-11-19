@@ -2,7 +2,6 @@ package ca.sbstn.dbtest.task;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -14,12 +13,13 @@ import java.sql.Statement;
 
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
+import ca.sbstn.dbtest.sql.SQLResult;
 import ca.sbstn.dbtest.sql.Server;
 
 /**
  * Created by tills13 on 2015-07-12.
  */
-public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, ResultSet> {
+public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, SQLResult> {
     private static final String TAG = "EXECUTEQUERYTASK";
 
     private Context context;
@@ -27,11 +27,9 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, Result
 
     private SQLExecuteCallback callback;
     private ProgressBar progressBar;
-    private Handler handler;
 
-    public ExecuteQueryWithCallbackTask(Context context, Handler handler, Database database, SQLExecuteCallback callback) {
+    public ExecuteQueryWithCallbackTask(Context context, Database database, SQLExecuteCallback callback) {
         this.context = context;
-        this.handler = handler;
         this.database = database;
         this.callback = callback;
     }
@@ -41,7 +39,7 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, Result
     }
 
     @Override
-    protected ResultSet doInBackground(String... queries) {
+    protected SQLResult doInBackground(String... queries) {
         String query = queries[0];
 
         Server server = this.database.getServer();
@@ -51,7 +49,8 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, Result
             Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
             Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
-            return statement.executeQuery(query);
+            ResultSet result = statement.executeQuery(query);
+            return SQLResult.from(result);
         } catch (Exception e) {
             Log.w(TAG, e.getMessage());
             if (this.callback != null) this.callback.onError(e);
@@ -61,8 +60,8 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, Result
     }
 
     @Override
-    protected void onPostExecute(final ResultSet results) {
-        super.onPostExecute(results);
+    protected void onPostExecute(final SQLResult sqlResult) {
+        super.onPostExecute(sqlResult);
 
         if (this.progressBar != null) {
             ViewGroup parent = ((ViewGroup) this.progressBar.getParent());
@@ -70,13 +69,8 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, Result
         }
 
         if (this.callback != null) {
-            if (results != null) {
-                this.handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        callback.onSuccess(results);
-                    }
-                });
+            if (sqlResult != null) {
+                callback.onSuccess(sqlResult);
             }
         }
     }

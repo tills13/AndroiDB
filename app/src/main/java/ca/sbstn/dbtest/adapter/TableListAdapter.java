@@ -51,7 +51,7 @@ public class TableListAdapter extends BaseAdapter {
         this.showIndexes = true;
         this.showSequences = true;
 
-        this.sortType = 0;
+        this.sortType = 1;
     }
 
     public void divide() {
@@ -62,11 +62,11 @@ public class TableListAdapter extends BaseAdapter {
             String label = null;
 
             if (this.sortType == 0) { // name
-                label = table.getName().substring(0, 1);
+                label = table.getName().substring(0, 1).toLowerCase();
             } else if (this.sortType == 1) { // type
-                label = table.getTypeString();
+                label = table.getTypeString().toLowerCase();
             } else {
-                label = table.getSchema();
+                label = table.getSchema().toLowerCase();
             }
 
             if (!this.sections.containsKey(label)) {
@@ -74,7 +74,7 @@ public class TableListAdapter extends BaseAdapter {
             }
 
             if (!this.isCollapsed.containsKey(label)) {
-                this.isCollapsed.put(label, false);
+                this.isCollapsed.put(label, true);
             }
 
             List<Table> mTables = this.sections.get(label);

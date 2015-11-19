@@ -1,6 +1,5 @@
 package ca.sbstn.dbtest.task;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -14,6 +13,7 @@ import java.sql.Statement;
 
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
+import ca.sbstn.dbtest.sql.SQLResult;
 import ca.sbstn.dbtest.sql.Server;
 import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.view.SQLTableLayout;
@@ -21,7 +21,7 @@ import ca.sbstn.dbtest.view.SQLTableLayout;
 /**
  * Created by tills13 on 2015-07-12.
  */
-public class ExecuteQueryTask extends AsyncTask<String, Void, Void> {
+public class ExecuteQueryTask extends AsyncTask<String, Void, SQLResult> {
     private static final String TAG = "EXECUTEQUERYTASK";
 
     private Context context;
@@ -46,12 +46,16 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, Void> {
         this.tableLayout = tableLayout;
     }
 
+    public void setCallback(SQLExecuteCallback callback) {
+        this.callback = callback;
+    }
+
     public void setProgressBar(ProgressBar progressBar) {
         this.progressBar = progressBar;
     }
 
     @Override
-    protected Void doInBackground(String... queries) {
+    protected SQLResult doInBackground(String... queries) {
         String query = queries[0];
         Server server = this.database.getServer();
         String url = String.format("jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), this.database.getName());
@@ -66,6 +70,8 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, Void> {
             }
 
             this.table.setData(results);
+            SQLResult result = SQLResult.from(results);
+
 
             boolean shouldFetchAbsoluteRowCount = context.getSharedPreferences("settings", Context.MODE_PRIVATE).getBoolean("fetch_absolute_row_count", true);
 
@@ -76,20 +82,21 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, Void> {
                 ));
 
                 if (rowCount.next()) {
-                    table.setTotalRows(results.getInt("count"));
+                    table.setTotalRows(rowCount.getInt("count"));
                 }
             }
+
+            connection.close();
+            return result;
         } catch (Exception e) {
             Log.w(TAG, e.getMessage());
             return null;
         }
-
-        return null;
     }
 
     @Override
-    protected void onPostExecute(Void mVoid) {
-        super.onPostExecute(mVoid);
+    protected void onPostExecute(SQLResult sqlResult) {
+        super.onPostExecute(sqlResult);
 
         if (this.progressBar != null) {
             ViewGroup parent = ((ViewGroup) this.progressBar.getParent());
@@ -100,13 +107,7 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, Void> {
             this.tableLayout.setTable(table);
         }
 
-        this.tableLayout.invalidate();
-        this.tableLayout.requestLayout();
-
-        boolean shouldFetchAbsoluteRowCount = context.getSharedPreferences("settings", Context.MODE_PRIVATE).getBoolean("fetch_absolute_row_count", true);
-        if (shouldFetchAbsoluteRowCount) {
-            ((Activity) this.context).getActionBar().setSubtitle(String.format("of %d rows", this.table.getTotalRows()));
-        }
+        if (this.callback != null) this.callback.onSuccess(sqlResult);
     }
 
     @Override

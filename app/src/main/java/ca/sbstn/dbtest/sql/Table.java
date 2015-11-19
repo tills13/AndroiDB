@@ -3,8 +3,6 @@ package ca.sbstn.dbtest.sql;
 import android.util.Log;
 
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -71,8 +69,8 @@ public class Table implements Serializable {
         List<String[]> rows = new ArrayList<>();
 
         try {
-            Statement statement = results.getStatement();
-            Connection connection = statement.getConnection();
+            //Statement statement = results.getStatement();
+            //Connection connection = statement.getConnection();
             ResultSetMetaData rsmd = results.getMetaData();
 
             int numColumns = rsmd.getColumnCount();
@@ -148,12 +146,6 @@ public class Table implements Serializable {
         this.offset = Math.max(this.offset - this.limit, 0);
     }
 
-    protected void init(DatabaseMetaData dbmd) throws SQLException {
-        if (this.name != null) {
-
-        }
-    }
-
     public String getName() {
         return this.name;
     }
@@ -171,7 +163,7 @@ public class Table implements Serializable {
     }
 
     public String getSchema() {
-        Log.d("TABLE", String.format("%s %s", this.name, this.schemas[0]));
+        //Log.d("TABLE", String.format("%s %s", this.name, this.schemas[0]));
         if (this.schemas == null) return "";
         else return this.schemas[0];
     }
