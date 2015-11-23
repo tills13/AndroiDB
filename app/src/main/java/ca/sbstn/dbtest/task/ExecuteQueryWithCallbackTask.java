@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
@@ -19,11 +21,12 @@ import ca.sbstn.dbtest.sql.Server;
 /**
  * Created by tills13 on 2015-07-12.
  */
-public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, SQLResult> {
+public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<SQLResult>> {
     private static final String TAG = "EXECUTEQUERYTASK";
 
     private Context context;
     private Database database;
+    private boolean usePostgres;
 
     private SQLExecuteCallback callback;
     private ProgressBar progressBar;
@@ -32,35 +35,59 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, SQLRes
         this.context = context;
         this.database = database;
         this.callback = callback;
+
+        this.usePostgres = false;
     }
 
     public void setProgressBar(ProgressBar progressBar) {
         this.progressBar = progressBar;
     }
 
-    @Override
-    protected SQLResult doInBackground(String... queries) {
-        String query = queries[0];
-
-        Server server = this.database.getServer();
-        String url = String.format("jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), this.database.getName());
-
-        try {
-            Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
-            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-
-            ResultSet result = statement.executeQuery(query);
-            return SQLResult.from(result);
-        } catch (Exception e) {
-            Log.w(TAG, e.getMessage());
-            if (this.callback != null) this.callback.onError(e);
-        }
-
-        return null;
+    public void setUsePostgres(boolean usePostgres) {
+        this.usePostgres = usePostgres;
     }
 
     @Override
-    protected void onPostExecute(final SQLResult sqlResult) {
+    protected List<SQLResult> doInBackground(String ... queries) {
+        List<SQLResult> results = new ArrayList<>();
+
+        //Connection connection;
+
+        Server server = this.database.getServer();
+        String url = String.format("jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), usePostgres ? "postgres" : this.database.getName());
+
+        /*try {
+            connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
+        } catch (SQLException e) {
+            //for (String query : queries) {
+
+            //}
+        }*/
+
+
+        for (String query : queries) {
+            SQLResult sqlResult;
+
+            try {
+                Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
+                Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ResultSet result = statement.executeQuery(query);
+                sqlResult = SQLResult.from(result);
+            } catch (Exception e) {
+                Log.d("EXECUTEQUERYCALLBACK", e.getMessage());
+                sqlResult = new SQLResult();
+                sqlResult.setQuery(query);
+                sqlResult.setError(e);
+            }
+
+            results.add(sqlResult);
+        }
+
+        return results;
+    }
+
+    @Override
+    protected void onPostExecute(List<SQLResult> sqlResult) {
         super.onPostExecute(sqlResult);
 
         if (this.progressBar != null) {
@@ -69,9 +96,8 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, SQLRes
         }
 
         if (this.callback != null) {
-            if (sqlResult != null) {
-                callback.onSuccess(sqlResult);
-            }
+            if (sqlResult.size() == 1) callback.onSingleResult(sqlResult.get(0));
+            else callback.onResult(sqlResult);
         }
     }
 

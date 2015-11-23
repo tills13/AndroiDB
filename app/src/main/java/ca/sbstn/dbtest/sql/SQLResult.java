@@ -13,8 +13,10 @@ import java.util.List;
  * Created by tills13 on 2015-11-18.
  */
 public class SQLResult implements Iterable<SQLResult.Row> {
+    private String query;
     private List<Column> columns;
     private List<Row> rows;
+    private Exception error;
 
     public SQLResult() {
         this.columns = new ArrayList<>();
@@ -26,6 +28,7 @@ public class SQLResult implements Iterable<SQLResult.Row> {
 
         try {
             ResultSetMetaData resultSetMetaData = results.getMetaData();
+            sqlResult.query = results.getStatement().toString();
 
             int numColumns = resultSetMetaData.getColumnCount();
 
@@ -38,6 +41,7 @@ public class SQLResult implements Iterable<SQLResult.Row> {
 
             while (results.next()) sqlResult.rows.add(Row.from(sqlResult, results));
         } catch (SQLException e) {
+            Log.d("SQLResult", e.getMessage());
             return null;
         }
 
@@ -65,6 +69,26 @@ public class SQLResult implements Iterable<SQLResult.Row> {
         return this.columns.size();
     }
 
+    public int getRowCount() {
+        return this.rows.size();
+    }
+
+    public String getQuery() {
+        return this.query;
+    }
+
+    public Exception getError() {
+        return this.error;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public void setError(Exception e) {
+        this.error = e;
+    }
+
     public Iterator<Row> iterator() {
         return new SQLResultIterator(this);
     }
@@ -76,8 +100,6 @@ public class SQLResult implements Iterable<SQLResult.Row> {
         public Column(String type, String name) {
             this.type = type;
             this.name = name;
-
-            Log.d("column", String.format("%s %s", name, type));
         }
 
         public String getType() {
@@ -106,6 +128,7 @@ public class SQLResult implements Iterable<SQLResult.Row> {
                     row.data.add(results.getObject(i));
                 }
             } catch (SQLException e) {
+                Log.d("something", e.getMessage());
                 return null;
             }
 
@@ -142,7 +165,7 @@ public class SQLResult implements Iterable<SQLResult.Row> {
 
         @Override
         public boolean hasNext() {
-            return this.cursor < this.result.getColumnCount();
+            return this.cursor < this.result.getRowCount();
         }
 
         @Override

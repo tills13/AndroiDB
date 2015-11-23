@@ -3,6 +3,7 @@ package ca.sbstn.dbtest.activity;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -35,7 +36,7 @@ import ca.sbstn.dbtest.sql.Server;
 /**
  * A login screen that offers login via email/password.
  */
-public class NewServerActivity extends Activity {
+public class CreateOrEditServerActivity extends Activity {
     private LinearLayout container;
 
     private EditText nameView;
@@ -73,7 +74,7 @@ public class NewServerActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_server);
+        setContentView(R.layout.edit_server);
 
         this.prefs = this.getSharedPreferences("AndroiDB", MODE_PRIVATE);
 
@@ -209,6 +210,16 @@ public class NewServerActivity extends Activity {
             return false;
         }
 
+        if (this.server != null) {
+            this.server.setName(name);
+            this.server.setHost(host);
+            this.server.setPort(port);
+            this.server.setDefaultDatabase(defaultDatabase);
+            this.server.setUsername(user);
+            this.server.setPassword(password);
+            this.server.setColor(color);
+        }
+
         String key = this.getPrefsKey(name);
         if (this.server == null && this.prefs.contains(key)) { // new server, name already taken
 
@@ -264,11 +275,25 @@ public class NewServerActivity extends Activity {
                 String message = result ? "Successfully connected" : "Connection failed: " + this.exception.getMessage();
 
 
-                (new AlertDialog.Builder(NewServerActivity.this)).setTitle(result ? "Success" : "Failed").setMessage(message).setPositiveButton("ok", null).show();
+                (new AlertDialog.Builder(CreateOrEditServerActivity.this)).setTitle(result ? "Success" : "Failed").setMessage(message).setPositiveButton("ok", null).show();
             }
         };
 
         testConnectionTask.execute("");
+    }
+
+    public void confirmDelete() {
+        new AlertDialog.Builder(this)
+                .setMessage(String.format("Are you sure you want to delete %s?", this.server.getName()))
+                .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        prefs.edit().remove("db_" + server.getName()).commit();
+                        finish();
+                    }
+                })
+                .setNegativeButton("no", null)
+                .create().show();
     }
 
     public String getPrefsKey(String name) {
@@ -277,31 +302,28 @@ public class NewServerActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_new_server, menu);
+        getMenuInflater().inflate(R.menu.menu_create_edit_server, menu);
 
-        if (this.server == null) menu.removeItem(R.id.delete_server);
-        else {
-            //int positionOfMenuItem = 0; // or whatever...
-            //MenuItem menuItem = menu.findItem(R.id.delete_server);
-           // SpannableString s = new SpannableString("delete");
-            //s.setSpan(new ForegroundColorSpan(Color.RED), 0, s.length(), 0);
-            //menuItem.setTitle(s);
-        }
+        if (this.server == null) menu.removeItem(R.id.action_done);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.delete_server) {
-            this.prefs.edit().remove("db_" + this.server.getName()).commit();
-            finish();
+        if (id == R.id.action_delete) {
+            this.confirmDelete();
+        } else if (id == R.id.action_done) {
+            if (this.saveServer()) {
+                this.finish();    
+            } else {
+                new AlertDialog.Builder(this)
+                        .setMessage("Something went wrong saving this server... You should probably email the developer (tyler@sbstn.ca) about this.")
+                        .setPositiveButton("ok", null)
+                        .create().show();
+            }
+            
         }
 
         return super.onOptionsItemSelected(item);

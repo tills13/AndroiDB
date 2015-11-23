@@ -62,4 +62,8 @@
             WHERE oid = \'"%s"."%s"\'::regclass::oid;
     </string>
 
+    <string name="db_query_update_database" formatted="false">
+        ALTER DATABASE %s OWNER TO %s
+    </string>
+
 </resources>

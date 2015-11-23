@@ -35,7 +35,7 @@ public class FetchTableKeysTask extends AsyncTask<Table, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Table... tables) {
+    protected Void doInBackground(Table ... tables) {
         Table table = tables[0];
         Database database = table.getDatabase();
         Server server = database.getServer();
@@ -76,6 +76,6 @@ public class FetchTableKeysTask extends AsyncTask<Table, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        if (this.callback != null) this.callback.onSuccess(null);
+        if (this.callback != null) this.callback.onSingleResult(null);
     }
 }

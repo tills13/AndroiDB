@@ -1,5 +1,7 @@
 package ca.sbstn.dbtest.callback;
 
+import java.util.List;
+
 import ca.sbstn.dbtest.sql.SQLResult;
 
 /**
@@ -8,7 +10,6 @@ import ca.sbstn.dbtest.sql.SQLResult;
 public abstract class SQLExecuteCallback {
     public SQLExecuteCallback() {}
 
-    public abstract void onSuccess(SQLResult results);
-
-    public abstract void onError(Exception e);
+    public abstract void onResult(List<SQLResult>  results);
+    public abstract void onSingleResult(SQLResult result);
 }

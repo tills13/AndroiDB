@@ -11,34 +11,35 @@
 
     <string name="activity_servers_no_servers">You have no SQL servers saved, use the overflow menu to add a new server.</string>
 
+    <string name="action_sort">Sort</string>
+    <string name="action_show">Show</string>
+    <string name="action_query_runner">Query Runner</string>
 
+    <string name="action_show_tables">Show Tables</string>
+    <string name="action_show_indexes">Show Indexes</string>
+    <string name="action_show_views">Show Views</string>
+    <string name="action_show_sequences">Show Sequences</string>
 
-
-
+    <string name="action_sort_schema">Sort by Schema</string>
+    <string name="action_sort_name">Sort by Name</string>
+    <string name="action_sort_type">Sort by Type</string>
 
     <string name="action_settings">Settings</string>
     <string name="action_edit">Edit</string>
+    <string name="action_save">Save</string>
     <string name="action_new">New</string>
+    <string name="action_done">Done</string>
     <string name="action_delete">Delete</string>
-
-
-
 
     <string name="columns_title">Columns</string>
     <string name="fkeys_title">Foreign Keys</string>
     <string name="pkeys_title">Primary Keys</string>
 
 
-
     <string name="no_databases_message">Use the overflow menu to add a database</string>
 
     <string name="query_field_hint">query...</string>
     <string name="query_runner_run">execute</string>
-
-    <string name="show_tables_menu_toggle_string">show tables</string>
-    <string name="show_indexes_menu_toggle_string">show indexes</string>
-    <string name="show_views_menu_toggle_string">show views</string>
-    <string name="show_sequences_menu_toggle_string">show sequences</string>
 
     <string name="prompt_name">Name</string>
     <string name="prompt_host">Hostname</string>
@@ -49,4 +50,12 @@
 
     <string name="server_info_label">Server</string>
     <string name="user_info_label">User Info</string>
+
+    <string name="database_title_name">Name</string>
+    <string name="database_title_owner">Owner</string>
+    <string name="database_title_comment">Comment</string>
+
+    <string name="hint_name">Database Name</string>
+    <string name="hint_owner">Database Owner</string>
+    <string name="hint_comment">Database Comment</string>
 </resources>

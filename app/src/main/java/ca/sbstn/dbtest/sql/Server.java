@@ -1,7 +1,5 @@
 package ca.sbstn.dbtest.sql;
 
-import android.graphics.Color;
-
 import java.io.Serializable;
 import java.util.List;
 
@@ -67,5 +65,29 @@ public class Server implements Serializable {
 
     public String getColor() {
         return this.color;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }

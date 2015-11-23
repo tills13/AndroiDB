@@ -20,14 +20,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.DatabaseActivity"
-            android:label="@string/title_activity_database"
-            android:parentActivityName=".activity.MainActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MainActivity" />
-        </activity>
-        <activity
             android:name=".activity.ViewDataActivity"
             android:label="@string/title_activity_table"
             android:parentActivityName=".activity.DatabaseActivity" >
@@ -36,18 +28,10 @@
                 android:value=".activity.DatabaseActivity" />
         </activity>
         <activity
-            android:name=".activity.NewServerActivity"
+            android:name=".activity.CreateOrEditServerActivity"
             android:label="@string/title_activity_add_database"
             android:parentActivityName=".activity.MainActivity"
             android:windowSoftInputMode="adjustResize|stateVisible" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.MainActivity" />
-        </activity>
-        <activity
-            android:name=".activity.ServerActivity"
-            android:label="@string/title_activity_databases"
-            android:parentActivityName=".activity.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activity.MainActivity" />

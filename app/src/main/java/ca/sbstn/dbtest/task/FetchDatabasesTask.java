@@ -3,8 +3,6 @@ package ca.sbstn.dbtest.task;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.GridView;
-import android.widget.ListView;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sbstn.dbtest.R;
-import ca.sbstn.dbtest.activity.ServerActivity;
 import ca.sbstn.dbtest.adapter.DatabaseListAdapter;
+import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
 import ca.sbstn.dbtest.sql.Server;
 
@@ -24,14 +22,22 @@ import ca.sbstn.dbtest.sql.Server;
  */
 public class FetchDatabasesTask extends AsyncTask<Server, Void, List<Database>> {
     public static String TAG = "FETCHDATABASESTASK";
-    public Context context;
 
-    public FetchDatabasesTask(Context context) {
+    private Context context;
+    private SQLExecuteCallback sqlExecuteCallback;
+    private DatabaseListAdapter mAdapter;
+
+    public FetchDatabasesTask(Context context, DatabaseListAdapter adapter) {
         this.context = context;
+        this.mAdapter = adapter;
+    }
+
+    public void setCallback(SQLExecuteCallback sqlExecuteCallback) {
+        this.sqlExecuteCallback = sqlExecuteCallback;
     }
 
     @Override
-    protected List<Database> doInBackground(Server... servers) {
+    protected List<Database> doInBackground(Server ... servers) {
         Server server = servers[0];
         List<Database> databases = new ArrayList<>();
 
@@ -70,17 +76,11 @@ public class FetchDatabasesTask extends AsyncTask<Server, Void, List<Database>> 
     protected void onPostExecute(List<Database> databases) {
         super.onPostExecute(databases);
 
-        ListView databaseList = (ListView) ((ServerActivity) this.context).findViewById(R.id.databases);
-        ((ServerActivity) this.context).swipeLayout.setRefreshing(false);
-
-        if (databaseList.getAdapter() == null) {
-            databaseList.setAdapter(new DatabaseListAdapter(this.context));
+        if (this.sqlExecuteCallback != null) {
+            this.sqlExecuteCallback.onSingleResult(null);
         }
 
-        ((DatabaseListAdapter) databaseList.getAdapter()).setDatabases(databases);
-        ((DatabaseListAdapter) databaseList.getAdapter()).notifyDataSetChanged();
-
-        databaseList.invalidate();
-        databaseList.requestLayout();
+        this.mAdapter.setDatabases(databases);
+        this.mAdapter.notifyDataSetChanged();
     }
 }

@@ -25,11 +25,12 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
         <ListView
-            android:id="@+id/databases"
+            android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp"
+            android:drawSelectorOnTop="true"
             android:animateLayoutChanges="true" />
     </LinearLayout>
 </android.support.v4.widget.SwipeRefreshLayout>

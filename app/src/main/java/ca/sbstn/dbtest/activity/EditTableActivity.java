@@ -4,13 +4,10 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import ca.sbstn.dbtest.R;
 import ca.sbstn.dbtest.sql.Table;
@@ -52,9 +49,7 @@ public class EditTableActivity extends Activity {
         for (int i = 0; i < this.table.getColumns().length; i++) {
             String column = this.table.getColumns()[i];
 
-            LinearLayout divider = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.title_block, null);
-
-            TextView title = (TextView) divider.findViewById(R.id.title);
+            /*TextView title = (TextView) divider.findViewById(R.id.title);
             title.setText(column);
 
             this.tableInfoContainer.addView(divider);
@@ -72,7 +67,7 @@ public class EditTableActivity extends Activity {
             editTextContainer.setPadding(padding, 0, padding, 0);
             editTextContainer.addView(editText);
 
-            this.tableInfoContainer.addView(editTextContainer);
+            this.tableInfoContainer.addView(editTextContainer);*/
         }
     }
 

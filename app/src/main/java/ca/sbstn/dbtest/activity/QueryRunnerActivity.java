@@ -44,7 +44,6 @@ public class QueryRunnerActivity extends Activity {
         this.database = (Database) this.getIntent().getSerializableExtra("database");
 
         ActionBar ab = this.getActionBar();
-
         if (ab != null) {
             ab.setTitle(String.format("Querying %s", this.database.getName()));
         }
@@ -81,12 +80,19 @@ public class QueryRunnerActivity extends Activity {
 
                     String fieldValue = s.toString();
 
-                    fieldValue = fieldValue.replaceAll("('.*?')", "<font color='green'>$1</font>")
+                    int selectionStart = queryField.getSelectionStart();
+                    int selectionEnd = queryField.getSelectionEnd();
+
+                    fieldValue = fieldValue.replaceAll("'(.*?)'", "<font color='orange'>$1</font>")
                             .replaceAll("\\.([^ ]+)", "<font color='purple'>.$1</font>")
-                            .replaceAll("(?i)(select|from|as|insert|where|join|natural|public|limit|offset|update|delete)", "<font color='blue'>$1</font>");
+                            .replaceAll("(?i)(analyze|inspect)", "<font color='blue'>$1</font>")
+                            .replaceAll("(?i)(select|insert|create table|update)", "<font color='blue'>$1</font>")
+                            .replaceAll("(?i)(from|as|insert|where|join|on|natural|public|limit|offset|update|delete)", "<font color='blue'>$1</font>")
+                            .replaceAll("(?i)(order by|group by)", "<font color='blue'>$1</font>");
+                            //.replaceAll("(?i)(select|insert|create table|update)", "<font color='blue'>$1</font>");
 
                     queryField.setText(Html.fromHtml(fieldValue));
-                    queryField.setSelection(queryField.getText().length());
+                    queryField.setSelection(selectionStart, selectionEnd);
 
                     this.formatting = false;
                 }
@@ -99,8 +105,11 @@ public class QueryRunnerActivity extends Activity {
                 history.add(queryField.getText().toString());
 
                 prefs.edit().putStringSet("query_history", new HashSet<>(history)).apply();
+
                 Intent intent = new Intent(QueryRunnerActivity.this, ViewDataActivity.class);
                 intent.putExtra("query", queryField.getText().toString());
+                intent.putExtra("database", database);
+
                 startActivity(intent);
             }
         });
@@ -128,10 +137,6 @@ public class QueryRunnerActivity extends Activity {
         });
     }
 
-    public void runQuery() {
-        //FetchDataTask task = new FetchDataTask(this);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -141,9 +146,6 @@ public class QueryRunnerActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement

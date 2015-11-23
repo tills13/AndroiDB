@@ -4,51 +4,60 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="ca.sbstn.dbtest.activity.DatabaseActivity">
     <item
+        android:id="@+id/action_edit"
+        android:title="@string/action_edit"
+        android:icon="@android:drawable/ic_menu_edit"/>
+    <item
         android:id="@+id/action_query_runner"
-        android:title="asd"
+        android:title="@string/action_query_runner"
         android:icon="@drawable/ic_storage_white_48dp"
         android:orderInCategory="100"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/show_tables"
-        android:title="@string/show_tables_menu_toggle_string"
-        android:checkable="true"
-        android:checked="true"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/show_indexes"
-        android:title="@string/show_indexes_menu_toggle_string"
-        android:checkable="true"
-        android:checked="true"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/show_views"
-        android:title="@string/show_views_menu_toggle_string"
-        android:checkable="true"
-        android:checked="true"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/show_sequences"
-        android:title="@string/show_sequences_menu_toggle_string"
-        android:checkable="true"
-        android:checked="true"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
 
-    <item android:title="sort">
+    <item android:title="@string/action_show">
+        <menu>
+            <item
+                android:id="@+id/show_tables"
+                android:title="@string/action_show_tables"
+                android:checkable="true"
+                android:checked="true"
+                android:orderInCategory="100"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/show_indexes"
+                android:title="@string/action_show_indexes"
+                android:checkable="true"
+                android:checked="true"
+                android:orderInCategory="100"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/show_views"
+                android:title="@string/action_show_views"
+                android:checkable="true"
+                android:checked="true"
+                android:orderInCategory="100"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/show_sequences"
+                android:title="@string/action_show_sequences"
+                android:checkable="true"
+                android:checked="true"
+                android:orderInCategory="100"
+                app:showAsAction="never" />
+        </menu>
+    </item>
+
+    <item android:title="@string/action_sort">
         <menu>
             <item
                 android:id="@+id/sort_name"
-                android:title="sort by name" />
+                android:title="@string/action_sort_name" />
             <item
                 android:id="@+id/sort_schema"
-                android:title="sort by schema" />
+                android:title="@string/action_sort_schema" />
             <item
                 android:id="@+id/sort_type"
-                android:title="sort by type" />
+                android:title="@string/action_sort_type" />
         </menu>
     </item>
 

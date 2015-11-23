@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -102,12 +101,15 @@ public class RowInspectorActivity extends Activity {
         // generate callback to build data after row is fetched
         SQLExecuteCallback callback = new SQLExecuteCallback() {
             @Override
-            public void onSuccess(SQLResult results) {
+            public void onResult(List<SQLResult> results) {}
+
+            @Override
+            public void onSingleResult(SQLResult sqlResult) {
                 try {
                     LayoutInflater inflater = LayoutInflater.from(RowInspectorActivity.this);
 
-                    List<SQLResult.Column> columns = results.getColumns();
-                    SQLResult.Row row = results.getRow(0); // there should only be one row
+                    List<SQLResult.Column> columns = sqlResult.getColumns();
+                    SQLResult.Row row = sqlResult.getRow(0); // there should only be one row
 
                     for (SQLResult.Column column : columns) {
                         String name = column.getName();
@@ -121,17 +123,9 @@ public class RowInspectorActivity extends Activity {
 
                         columnsContainer.addView(view);
                     }
-                } catch (Exception e) {
-                    System.out.println(e);
-                    this.onError(e);
-                }
+                } catch (Exception e) {}
 
                 swipeRefreshLayout.setRefreshing(false);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                Log.e("callback", e.getMessage() == null ? "no message provided" : e.getMessage());
             }
         };
 
@@ -146,13 +140,16 @@ public class RowInspectorActivity extends Activity {
 
         FetchTableKeysTask fetchTableKeysTask = new FetchTableKeysTask(this, new SQLExecuteCallback() {
             @Override
-            public void onSuccess(SQLResult results) {
+            public void onResult(List<SQLResult> results) {
                 showPrimaryKeys();
                 showForeignKeys();
             }
 
             @Override
-            public void onError(Exception e) {}
+            public void onSingleResult(SQLResult sqlResult) {
+                showPrimaryKeys();
+                showForeignKeys();
+            }
         });
 
         fetchTableKeysTask.execute(this.table);

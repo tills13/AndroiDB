@@ -2,26 +2,22 @@ package ca.sbstn.dbtest.task;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
 import ca.sbstn.dbtest.sql.SQLResult;
-import ca.sbstn.dbtest.sql.Server;
 import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.view.SQLTableLayout;
 
 /**
  * Created by tills13 on 2015-07-12.
  */
-public class ExecuteQueryTask extends AsyncTask<String, Void, SQLResult> {
+public class ExecuteQueryTask extends AsyncTask<String, Void, List<SQLResult>> {
     private static final String TAG = "EXECUTEQUERYTASK";
 
     private Context context;
@@ -55,15 +51,21 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, SQLResult> {
     }
 
     @Override
-    protected SQLResult doInBackground(String... queries) {
-        String query = queries[0];
-        Server server = this.database.getServer();
+    protected List<SQLResult> doInBackground(String ... queries) {
+        List<SQLResult> results = new ArrayList<>();
+
+        /*Server server = this.database.getServer();
         String url = String.format("jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), this.database.getName());
 
         try {
-            Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
-            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            ResultSet results = statement.executeQuery(query);
+            for (String query : queries) {
+                Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
+                Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ResultSet results = statement.executeQuery(query);
+
+
+            }
+
 
             if (this.table == null) {
                 this.table = new Table(this.database);
@@ -91,11 +93,13 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, SQLResult> {
         } catch (Exception e) {
             Log.w(TAG, e.getMessage());
             return null;
-        }
+        }*/
+
+        return results;
     }
 
     @Override
-    protected void onPostExecute(SQLResult sqlResult) {
+    protected void onPostExecute(List<SQLResult> sqlResult) {
         super.onPostExecute(sqlResult);
 
         if (this.progressBar != null) {
@@ -107,7 +111,10 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, SQLResult> {
             this.tableLayout.setTable(table);
         }
 
-        if (this.callback != null) this.callback.onSuccess(sqlResult);
+        if (this.callback != null) {
+            if (sqlResult.size() == 1) callback.onSingleResult(sqlResult.get(0));
+            else callback.onResult(sqlResult);
+        }
     }
 
     @Override

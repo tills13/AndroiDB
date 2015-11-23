@@ -11,6 +11,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import java.util.List;
+
 import ca.sbstn.dbtest.R;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.SQLResult;
@@ -115,11 +117,13 @@ public class TableActivity extends Activity {
         }
 
         @Override
-        public void onError(Exception e) {}
+        public void onResult(List<SQLResult> results) {
+            //this.actionBar.setSubtitle(results.getRow(0).getString("count"));
+        }
 
         @Override
-        public void onSuccess(SQLResult results) {
-            //this.actionBar.setSubtitle(results.getRow(0).getString("count"));
+        public void onSingleResult(SQLResult result) {
+
         }
     }
 }

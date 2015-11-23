@@ -1,6 +1,7 @@
 package ca.sbstn.dbtest.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,7 +29,7 @@ public class TableListAdapter extends BaseAdapter {
     public List<String> headers;
 
     public Map<String, Boolean> isCollapsed;
-    public Map<String, List<Table>> sections;
+    public Map<String, List<Table>> schemas;
 
     public boolean showTables;
     public boolean showViews;
@@ -40,11 +41,10 @@ public class TableListAdapter extends BaseAdapter {
     public TableListAdapter(Context context) {
         super();
 
-        this.sections = new HashMap<>();
+        this.schemas = new HashMap<>();
         this.isCollapsed = new HashMap<>();
 
         this.context = context;
-        this.tables = new ArrayList<>();
 
         this.showTables = true;
         this.showViews = true;
@@ -52,36 +52,6 @@ public class TableListAdapter extends BaseAdapter {
         this.showSequences = true;
 
         this.sortType = 1;
-    }
-
-    public void divide() {
-        this.sections = new HashMap<>();
-        this.isCollapsed = new HashMap<>();
-
-        for (Table table : this.tables) {
-            String label = null;
-
-            if (this.sortType == 0) { // name
-                label = table.getName().substring(0, 1).toLowerCase();
-            } else if (this.sortType == 1) { // type
-                label = table.getTypeString().toLowerCase();
-            } else {
-                label = table.getSchema().toLowerCase();
-            }
-
-            if (!this.sections.containsKey(label)) {
-                this.sections.put(label, new ArrayList<Table>());
-            }
-
-            if (!this.isCollapsed.containsKey(label)) {
-                this.isCollapsed.put(label, true);
-            }
-
-            List<Table> mTables = this.sections.get(label);
-            mTables.add(table);
-
-            this.sections.put(label, mTables);
-        }
     }
 
     public void sort() {
@@ -115,17 +85,25 @@ public class TableListAdapter extends BaseAdapter {
 
         if (this.isHeader(position)) {
             String headerKey = this.getHeader(position);
+            List<Table> tablesUnderHeader = this.schemas.get(headerKey);
 
             LinearLayout header = (LinearLayout) inflater.inflate(R.layout.table_header, null);
 
-            if (this.isCollapsed.get(headerKey)) {
-                ((ImageView) header.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_keyboard_arrow_down_white_48dp));
-            } else {
-                ((ImageView) header.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_keyboard_arrow_up_white_48dp));
-            }
-
             ((TextView) header.findViewById(R.id.primary_title)).setText(this.getHeader(position));
-            ((TextView) header.findViewById(R.id.secondary_title)).setText(String.format("%d items", this.sections.get(this.getHeader(position)).size()));
+
+            if (tablesUnderHeader == null) {
+                ((ImageView) header.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_indeterminate_check_box_white_24dp));
+
+                ((TextView) header.findViewById(R.id.secondary_title)).setText("Click to Load");
+            } else {
+                if (this.isCollapsed.get(headerKey)) {
+                    ((ImageView) header.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_keyboard_arrow_down_white_48dp));
+                } else {
+                    ((ImageView) header.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_keyboard_arrow_up_white_48dp));
+                }
+
+                ((TextView) header.findViewById(R.id.secondary_title)).setText(String.format("%d items", tablesUnderHeader.size()));
+            }
 
             return header;
         } else {
@@ -177,29 +155,27 @@ public class TableListAdapter extends BaseAdapter {
     public int getCount() {
         int size = 0;
 
-        String[] keys = new String[this.sections.keySet().size()];
-        keys = this.sections.keySet().toArray(keys);
-        Arrays.sort(keys);
+        for (String key : this.schemas.keySet()) {
+            List<Table> tablesInSchema = this.schemas.get(key);
 
-        for (String key : keys) {
-            size = size + (this.isCollapsed.get(key) ? 1 : this.sections.get(key).size());
+            if (tablesInSchema == null || this.isCollapsed.get(key)) {
+                size = size + 1; // just the header
+            } else {
+                size = size + (this.isCollapsed.get(key) ? 1 : (this.schemas.get(key).size()) + 1);
+            }
         }
 
         return size;
     }
 
     public String getHeader(int position) {
-        String[] keys = new String[this.sections.keySet().size()];
-        keys = this.sections.keySet().toArray(keys);
-        Arrays.sort(keys);
-
-        for (String key : keys) {
-            List<Table> mTables = this.sections.get(key);
+        for (String key : this.schemas.keySet()) {
+            List<Table> mTables = this.schemas.get(key);
 
             if (position == 0) { // header
                 return key;
             } else {
-                if (this.isCollapsed.get(key)) {
+                if (this.isCollapsed.get(key) || mTables == null) {
                     position = position - 1;
                 } else {
                     if (position > mTables.size()) {
@@ -215,17 +191,13 @@ public class TableListAdapter extends BaseAdapter {
     }
 
     public boolean isHeader(int position) {
-        String[] keys = new String[this.sections.keySet().size()];
-        keys = this.sections.keySet().toArray(keys);
-        Arrays.sort(keys);
-
-        for (String key : keys) {
-            List<Table> mTables = this.sections.get(key);
+        for (String key : this.schemas.keySet()) {
+            List<Table> mTables = this.schemas.get(key);
 
             if (position == 0) { // header
                 return true;
             } else {
-                if (this.isCollapsed.get(key)) {
+                if (this.isCollapsed.get(key) || mTables == null) {
                     position = position - 1;
                 } else {
                     if (position > mTables.size()) {
@@ -240,35 +212,34 @@ public class TableListAdapter extends BaseAdapter {
         return false;
     }
 
+    public boolean isLoaded(String header) {
+        return (this.schemas.get(header) != null);
+    }
+
     public void toggleCollapsed(String header) {
         if (this.isCollapsed.containsKey(header)) {
             this.isCollapsed.put(header, !this.isCollapsed.get(header));
         }
     }
 
-    public void setItems(List<Table> tables) {
-        this.tables = tables;
-        this.divide();
-        //this.sort();
+    public void setIsCollapsed(String header, boolean isCollapsed) {
+        this.isCollapsed.put(header, isCollapsed);
     }
 
-    public void setItems(String section, List<Table> tables) {
-
+    public void setItems(String schema, List<Table> tables) {
+        this.schemas.put(schema, tables);
+        this.setIsCollapsed(schema, false);
     }
 
     @Override
     public Table getItem(int position) {
-        String[] keys = new String[this.sections.keySet().size()];
-        keys = this.sections.keySet().toArray(keys);
-        Arrays.sort(keys);
-
-        for (String key : keys) {
-            List<Table> mTables = this.sections.get(key);
+        for (String key : this.schemas.keySet()) {
+            List<Table> mTables = this.schemas.get(key);
 
             if (position == 0) { // header
                 return null;
             } else {
-                if (this.isCollapsed.get(key)) {
+                if (this.isCollapsed.get(key) || mTables == null) {
                     position = position - 1;
                 } else {
                     if (position > mTables.size()) {
@@ -289,6 +260,17 @@ public class TableListAdapter extends BaseAdapter {
         return 0;
     }
 
+    public void setSchemas(List<String> schemas) {
+        this.schemas.clear();
+        this.isCollapsed.clear();
+
+        for (String schema : schemas) {
+            Log.d("blah", schema);
+            this.schemas.put(schema, null);
+            this.isCollapsed.put(schema, true);
+        }
+    }
+
     public void setShowTables(boolean showTables) {
         this.showTables = showTables;
     }
@@ -303,11 +285,5 @@ public class TableListAdapter extends BaseAdapter {
 
     public void setShowSequences(boolean showSequences) {
         this.showSequences = showSequences;
-    }
-
-    public void setSortType(int sortType) {
-        this.sortType = sortType;
-        this.divide();
-        //this.sort();
     }
 }

@@ -3,7 +3,6 @@ package ca.sbstn.dbtest.task;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.ListView;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,8 +10,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.sbstn.dbtest.R;
-import ca.sbstn.dbtest.activity.DatabaseActivity;
 import ca.sbstn.dbtest.adapter.TableListAdapter;
 import ca.sbstn.dbtest.sql.Database;
 import ca.sbstn.dbtest.sql.Server;
@@ -23,14 +20,26 @@ import ca.sbstn.dbtest.sql.Table;
  */
 public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
     public static String TAG = "FETCHTABLESTASK";
-    public Context context;
 
-    public FetchTablesTask(Context context) {
+    public Context context;
+    private Database database;
+    private TableListAdapter adapter;
+
+    private String schema;
+
+    public FetchTablesTask(Context context, TableListAdapter adapter) {
         this.context = context;
+        this.adapter = adapter;
+    }
+
+    public FetchTablesTask forSchema(String schema) {
+        this.schema = schema;
+
+        return this;
     }
 
     @Override
-    protected List<Table> doInBackground(Database... databases) {
+    protected List<Table> doInBackground(Database ... databases) {
         List<Table> tables = new ArrayList<>();
 
         Database database = databases[0];
@@ -42,7 +51,7 @@ public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
             Class.forName("org.postgresql.Driver").newInstance();
 
             Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
-            ResultSet results = connection.getMetaData().getTables(null, null, null, null);
+            ResultSet results = connection.getMetaData().getTables(null, this.schema, null, null);
 
             while (results.next()) {
                 Table table = Table.from(results, database);
@@ -64,8 +73,11 @@ public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
     protected void onPostExecute(List<Table> results) {
         super.onPostExecute(results);
 
-        ListView tableList = (ListView) ((DatabaseActivity) this.context).findViewById(R.id.table_list);
-        ((DatabaseActivity) this.context).swipeLayout.setRefreshing(false);
+        this.adapter.setItems(this.schema, results);
+        this.adapter.notifyDataSetChanged();
+
+        /*ListView tableList = (ListView) ((DatabaseActivity) this.context).findViewById(R.id.table_list);
+        ((DatabaseActivity) this.context).setRefreshing(false);
 
         if (tableList.getAdapter() == null) {
             tableList.setAdapter(new TableListAdapter(this.context));
@@ -75,6 +87,6 @@ public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
         ((TableListAdapter) tableList.getAdapter()).notifyDataSetChanged();
 
         tableList.requestLayout();
-        tableList.invalidate();
+        tableList.invalidate();*/
     }
 }

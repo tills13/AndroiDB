@@ -21,7 +21,6 @@ public class ViewDataActivity extends Activity {
     private Database database;
 
     private String query;
-
     private SQLTableLayout tableLayout;
 
     @Override
@@ -33,18 +32,14 @@ public class ViewDataActivity extends Activity {
 
         this.tableLayout = (SQLTableLayout) findViewById(R.id.table);
 
-        if (intent.hasExtra("table")) {
-            this.table = (Table) intent.getSerializableExtra("table");
-            this.database = (Database) intent.getSerializableExtra("database");
-        } else {
-            this.query = intent.getStringExtra("query");
-        }
+        this.query = intent.getStringExtra("query");
+        this.database = (Database) intent.getSerializableExtra("database");
 
         ActionBar ab = getActionBar();
 
         if (ab != null) {
             ab.setTitle("Results");
-            ab.setSubtitle(this.table.getName());
+            // ab.setSubtitle(this.table.getName());
         }
 
         this.init();
