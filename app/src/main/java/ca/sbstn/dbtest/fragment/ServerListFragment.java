@@ -2,11 +2,12 @@ package ca.sbstn.dbtest.fragment;
 
 
 import android.app.ActionBar;
-import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import ca.sbstn.dbtest.R;
-import ca.sbstn.dbtest.activity.CreateOrEditServerActivity;
+import ca.sbstn.dbtest.activity.AndroiDB;
 import ca.sbstn.dbtest.adapter.ServerListAdapter;
 import ca.sbstn.dbtest.sql.Server;
 
@@ -87,6 +88,12 @@ public class ServerListFragment extends Fragment {
 
         this.adapter.setServers(this.loadServers());
         this.adapter.notifyDataSetChanged();
+
+        //Log.d("color", Color.parseColor("#2b303b") + "");
+        //Log.d("color", R.color.app_theme_color + "");
+
+        ((AndroiDB) getActivity()).setToolbarTitle(getActivity().getResources().getString(R.string.app_name))
+                .setToolbarColor(Color.parseColor("#2b303b"), true, true);
     }
 
     @Nullable
@@ -108,12 +115,19 @@ public class ServerListFragment extends Fragment {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 ServerListAdapter serverListAdapter = (ServerListAdapter) adapterView.getAdapter();
+                Server server = (Server) serverListAdapter.getItem(i);
 
-                Intent intent = new Intent(getActivity(), CreateOrEditServerActivity.class);
-                intent.putExtra("server", (Server) serverListAdapter.getItem(i));
+                CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(server);
 
-                startActivity(intent);
-                return true; // handled
+                ((AndroiDB) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
+
+                /*((AndroiDB) getActivity()).getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.anim.slide_in, R.anim.snackbar_out)
+                        .replace(R.id.context_fragment, createOrEditServerFragment)
+                        .addToBackStack(null)
+                        .commit();*/
+
+                return true;
             }
         });
 
@@ -135,8 +149,8 @@ public class ServerListFragment extends Fragment {
 
         switch (itemId) {
             case R.id.action_new: {
-                Intent intent = new Intent(getActivity(), CreateOrEditServerActivity.class);
-                startActivity(intent);
+                Fragment fragment = CreateOrEditServerFragment.newInstance(null);
+                ((AndroiDB) getActivity()).putDetailsFragment(fragment, true);
             }
         }
 
@@ -144,12 +158,14 @@ public class ServerListFragment extends Fragment {
     }
 
     public List<Server> loadServers() {
-        Map<String, ?> preferences = this.getActivity().getSharedPreferences("AndroiDB", Context.MODE_PRIVATE).getAll();
+        SharedPreferences sharedPreferences = ((AndroiDB) getActivity()).getSharedPreferences();
+        Map<String, ?> preferences = sharedPreferences.getAll();
         List<Server> servers = new ArrayList<>();
 
         try {
             for (String key : preferences.keySet()) {
-                if (key.startsWith("db")) {
+                Log.d("key", key);
+                if (key.startsWith(AndroiDB.SHARED_PREFS_SERVER_PREFIX)) {
                     Object something = preferences.get(key);
                     JSONObject mServer = new JSONObject(something.toString());
                     Server server = new Server(

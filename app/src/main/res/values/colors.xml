@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="app_background_base">#2b303b</color>
-    <color name="app_actionbar_background_base">#20242c</color>
+    <color name="app_theme_color">#2b303b</color>
+    <color name="app_theme_color_dark">#20242c</color>
 
     <color name="title_section">#20242c</color>
     <color name="information_section">#262a34</color>
 
     <color name="table_row_even">#2f3440</color>
     <color name="table_row_odd">#353b49</color>
+
+    <color name="postgres_blue">#ffffff</color>
 
     <!-- Red -->
     <color name="red_50">#FFEBEE</color>
@@ -320,6 +322,9 @@
     <color name="blue_grey_900">#263238</color>
     <!-- Blue Grey -->
 
-    <color name="black">#000000</color>
+    <color name="black">#2b303b</color>
     <color name="white">#FFFFFF</color>
+    <color name="primary_material_dark">#2b303b</color>
+    <color name="primary_dark_material_dark">#263238</color>
+    <color name="accent_material_dark">#5c6bc0</color>
 </resources>

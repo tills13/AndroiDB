@@ -1,32 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="android:Theme.Material">
+    <style name="AndroiDB" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:navigationBarColor">@color/black</item>
+    </style>
+
+    <style name="AndroiDB.AppTheme" parent="AndroiDB">
+        <item name="android:windowBackground">@color/app_theme_color</item>
+
+        <item name="android:colorPrimary">@color/app_theme_color</item>
+        <item name="android:colorPrimaryDark">@color/app_theme_color_dark</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowActionBarOverlay">true</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AndroiDB.AppBar" parent="AndroiDB">
+        <item name="android:colorAccent">@color/grey_200</item>
         <item name="android:textColor">@color/grey_200</item>
         <item name="android:textColorPrimary">@color/grey_200</item>
-        <item name="android:colorPrimary">@color/app_actionbar_background_base</item>
-        <item name="android:colorPrimaryDark">@color/grey_900</item>
-        <item name="android:windowBackground">@color/app_background_base</item>
-        <item name="android:actionBarStyle">@style/ActionBar</item>
+        <item name="android:textColorPrimaryInverse">@color/blue_grey_800</item>
+        <item name="android:fontFamily">sans-serif-light</item>
     </style>
 
-    <style name="ActionBar" parent="android:Widget.Material.Light.ActionBar.Solid">
-        <item name="android:colorPrimary">@color/app_actionbar_background_base</item>
-        <item name="android:textColor">@color/grey_500</item>
-        <item name="android:textColorPrimary">@color/grey_500</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:elevation">1dp</item>
-
-        <item name="android:titleTextStyle">@style/MyTheme.ActionBar.TitleTextStyle</item>
-        <item name="android:subtitleTextStyle">@style/MyTheme.ActionBar.Subtitle</item>
+    <style name="AndroiDB.Toolbar" parent="AndroiDB.AppBar">
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:titleTextStyle">@style/AndroiDB.Toolbar.Title</item>
+        <item name="android:subtitleTextStyle">@style/AndroiDB.Toolbar.Subtitle</item>
     </style>
 
-    <style name="MyTheme.ActionBar.TitleTextStyle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Title">
+    <style name="AndroiDB.Title" parent="AndroiDB">
+        <item name="android:textColor">@color/grey_400</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
-    <style name="MyTheme.ActionBar.Subtitle" parent="@android:style/TextAppearance.Holo.Widget.ActionBar.Subtitle">
+    <style name="AndroiDB.Label" parent="AndroiDB">
+        <item name="android:textColor">@color/grey_200</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+    </style>
+
+    <style name="AndroiDB.Toolbar.Title" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:fontFamily">sans-serif-light</item>
+    </style>
+
+    <style name="AndroiDB.Toolbar.Subtitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Subtitle">
         <item name="android:textSize">10sp</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
-
 </resources>

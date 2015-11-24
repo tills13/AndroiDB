@@ -2,6 +2,7 @@ package ca.sbstn.dbtest.sql;
 
 import android.util.Log;
 
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -12,14 +13,16 @@ import java.util.List;
 /**
  * Created by tills13 on 2015-11-18.
  */
-public class SQLResult implements Iterable<SQLResult.Row> {
+public class SQLResult implements Iterable<SQLResult.Row>, Serializable {
     private String query;
     private List<Column> columns;
     private List<Row> rows;
     private Exception error;
 
+    private Table table;
+
     public SQLResult() {
-        this.columns = new ArrayList<>();
+        this.columns = new ArrayList<>(); // column definitions
         this.rows = new ArrayList<>();
     }
 
@@ -81,6 +84,10 @@ public class SQLResult implements Iterable<SQLResult.Row> {
         return this.error;
     }
 
+    public Table getTable() {
+        return this.table;
+    }
+
     public void setQuery(String query) {
         this.query = query;
     }
@@ -89,9 +96,14 @@ public class SQLResult implements Iterable<SQLResult.Row> {
         this.error = e;
     }
 
+    public void setTable(Table table) {
+        this.table = table;
+    }
+
     public Iterator<Row> iterator() {
         return new SQLResultIterator(this);
     }
+
 
     public static class Column {
         private String type;

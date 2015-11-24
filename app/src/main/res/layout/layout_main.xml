@@ -24,20 +24,9 @@
                 android:layout_height="wrap_content"
                 android:theme="@style/AndroiDB.Toolbar"/>
         </android.support.design.widget.AppBarLayout>
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/context_fragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:weightSum="2">
-            <FrameLayout
-                android:id="@+id/context_fragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
-            <FrameLayout
-                android:id="@+id/details_fragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1"/>
-        </LinearLayout>
+            android:layout_height="match_parent"/>
     </LinearLayout>
 </android.support.design.widget.CoordinatorLayout>

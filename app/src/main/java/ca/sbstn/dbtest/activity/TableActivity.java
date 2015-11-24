@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,7 +31,7 @@ public class TableActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.table_activity);
+        setContentView(R.layout.data_view);
 
         Intent intent = this.getIntent();
         this.table = (Table) intent.getSerializableExtra("table");
@@ -61,7 +60,6 @@ public class TableActivity extends Activity {
         this.nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d("SOMETHING", table.getSchema());
                 table.next();
 
                 if (executeQueryTask.getStatus() == AsyncTask.Status.RUNNING) {

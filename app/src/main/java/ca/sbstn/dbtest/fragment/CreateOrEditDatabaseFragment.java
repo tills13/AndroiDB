@@ -1,9 +1,10 @@
 package ca.sbstn.dbtest.fragment;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
+
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,7 +27,7 @@ import ca.sbstn.dbtest.task.ExecuteQueryWithCallbackTask;
 /**
  * Created by tills13 on 2015-11-22.
  */
-public class EditDatabaseFragment extends Fragment {
+public class CreateOrEditDatabaseFragment extends Fragment {
     public static final String DATABASE_PARAM = "database";
 
     private Database database;
@@ -40,11 +41,10 @@ public class EditDatabaseFragment extends Fragment {
     private EditText ownerField;
     private EditText commentField;
 
+    public CreateOrEditDatabaseFragment() {}
 
-    public EditDatabaseFragment() {}
-
-    public static EditDatabaseFragment newInstance(Database database) {
-        EditDatabaseFragment fragment = new EditDatabaseFragment();
+    public static CreateOrEditDatabaseFragment newInstance(Database database) {
+        CreateOrEditDatabaseFragment fragment = new CreateOrEditDatabaseFragment();
 
         Bundle bundle = new Bundle();
         bundle.putSerializable(DATABASE_PARAM, database);
@@ -83,31 +83,23 @@ public class EditDatabaseFragment extends Fragment {
         String newOwner = this.ownerField.getText().toString();
         String newComment = this.commentField.getText().toString();
 
-        String query = String.format("ALTER DATABASE %s", this.database.getName());
+        String baseQuery = String.format("ALTER DATABASE %s", this.database.getName());
         String commentQuery = String.format("COMMENT ON DATABASE \"%s\" IS '%s'", this.database.getName(), newComment);
 
         List<String> queries = new ArrayList<>();
 
-        boolean changed = false;
-
         if (!newOwner.equals(this.originalOwner)) {
-            query = query + String.format(" OWNER TO %s", newOwner);
-            changed = true;
+            queries.add(baseQuery + String.format(" OWNER TO %s;", newOwner));
         }
 
         if (!newName.equals(this.originalName)) {
-            if (changed) {
-                query = query + ",";
-            }
-
-            query = query + String.format(" RENAME TO %s", newName);
-            changed = true;
+            // queries.add(query + String.format(" RENAME TO %s;", newName));
+            // doesn't work, yet
         }
 
-        query = query + ";";
-
-        if (changed) queries.add(query);
-        if (!this.originalComment.equals(newComment)) queries.add(commentQuery);
+        if (!this.originalComment.equals(newComment)) {
+            queries.add(commentQuery);
+        }
 
         SQLExecuteCallback sqlExecuteCallback = new SQLExecuteCallback() {
             @Override

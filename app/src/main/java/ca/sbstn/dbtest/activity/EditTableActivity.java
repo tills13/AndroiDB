@@ -24,7 +24,7 @@ public class EditTableActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_table);
+        setContentView(R.layout.edit_table);
 
         Intent intent = this.getIntent();
 

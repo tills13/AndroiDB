@@ -7,6 +7,24 @@ import java.util.List;
  * Created by tills13 on 2015-07-10.
  */
 public class Server implements Serializable {
+    public static String[] colors = new String[] {
+            "#E57373", // red_303
+            "#64B5F6", // blue_300
+            "#F06292",
+            "#BA68C8",
+            "#9575CD",
+            "#7986CB",
+            "#4FC3F7",
+            "#4DD0E1",
+            "#4DB6AC",
+            "#81C784",
+            "#AED581",
+            "#FFB300",
+            "#FF8A65"
+    };
+
+
+
     private String name;
 
     private String host;

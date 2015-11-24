@@ -3,9 +3,13 @@ package ca.sbstn.dbtest.task;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.util.List;
 
 import ca.sbstn.dbtest.sql.Database;
+import ca.sbstn.dbtest.sql.Server;
 
 /**
  * Created by tills13 on 15-06-26.
@@ -20,6 +24,20 @@ public class SyncDatabasesTask extends AsyncTask<Database, Void, List<Database>>
 
     @Override
     protected List<Database> doInBackground(Database ... databases) {
+        for (Database database : databases) {
+            try {
+                String url = database.getConnectionString();
+                Server server = database.getServer();
+
+                Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
+                DatabaseMetaData databaseMetaData = connection.getMetaData();
+            } catch (Exception e) {
+
+            }
+        }
+
+
+
         /*try {
 
 

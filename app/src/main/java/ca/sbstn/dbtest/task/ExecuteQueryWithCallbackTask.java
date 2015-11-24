@@ -17,6 +17,7 @@ import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
 import ca.sbstn.dbtest.sql.SQLResult;
 import ca.sbstn.dbtest.sql.Server;
+import ca.sbstn.dbtest.sql.Table;
 
 /**
  * Created by tills13 on 2015-07-12.
@@ -26,7 +27,9 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<S
 
     private Context context;
     private Database database;
+    private Table table;
     private boolean usePostgres;
+    private boolean expectResult;
 
     private SQLExecuteCallback callback;
     private ProgressBar progressBar;
@@ -39,12 +42,21 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<S
         this.usePostgres = false;
     }
 
+    public ExecuteQueryWithCallbackTask(Context context, Table table, SQLExecuteCallback callback) {
+        this(context, table.getDatabase(), callback);
+        this.table = table;
+    }
+
     public void setProgressBar(ProgressBar progressBar) {
         this.progressBar = progressBar;
     }
 
     public void setUsePostgres(boolean usePostgres) {
         this.usePostgres = usePostgres;
+    }
+
+    public void setExpectResult(boolean expectResult) {
+        this.expectResult = true;
     }
 
     @Override
@@ -56,27 +68,30 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<S
         Server server = this.database.getServer();
         String url = String.format("jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), usePostgres ? "postgres" : this.database.getName());
 
-        /*try {
-            connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
-        } catch (SQLException e) {
-            //for (String query : queries) {
-
-            //}
-        }*/
-
 
         for (String query : queries) {
-            SQLResult sqlResult;
+            SQLResult sqlResult = new SQLResult();
+            sqlResult.setQuery(query);
 
             try {
                 Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
                 Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                ResultSet result = statement.executeQuery(query);
-                sqlResult = SQLResult.from(result);
+
+                if (expectResult) {
+                    ResultSet resultSet = statement.executeQuery(query);
+                    sqlResult = SQLResult.from(resultSet);
+
+                    if (sqlResult != null) {
+                        sqlResult.setTable(table);
+                    } else {
+                        throw new Exception("result expected");
+                    }
+                } else {
+                    statement.executeUpdate(query);
+                }
             } catch (Exception e) {
                 Log.d("EXECUTEQUERYCALLBACK", e.getMessage());
                 sqlResult = new SQLResult();
-                sqlResult.setQuery(query);
                 sqlResult.setError(e);
             }
 

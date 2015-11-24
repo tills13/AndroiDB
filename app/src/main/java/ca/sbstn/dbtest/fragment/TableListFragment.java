@@ -1,10 +1,10 @@
 package ca.sbstn.dbtest.fragment;
 
 
-import android.app.ActionBar;
-import android.app.Fragment;
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,11 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sbstn.dbtest.R;
-import ca.sbstn.dbtest.activity.TableActivity;
+import ca.sbstn.dbtest.activity.AndroiDB;
 import ca.sbstn.dbtest.adapter.TableListAdapter;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
 import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.task.FetchSchemasTask;
 import ca.sbstn.dbtest.task.FetchTablesTask;
 
@@ -32,6 +33,9 @@ public class TableListFragment extends Fragment {
     private Database database;
     private ListView listView;
     private TableListAdapter adapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+
+    private OnTableSelectedListener mListener;
 
     public TableListFragment() {}
 
@@ -56,24 +60,7 @@ public class TableListFragment extends Fragment {
             this.database = (Database) getArguments().getSerializable(DATABASE_PARAM);
 
             this.adapter = new TableListAdapter(getActivity());
-            FetchSchemasTask fetchSchemasTask = new FetchSchemasTask(new SQLExecuteCallback() {
-                @Override
-                public void onResult(List<SQLResult> results) {}
-
-                @Override
-                public void onSingleResult(SQLResult sqlResult) {
-                    List<String> schemas = new ArrayList<>();
-
-                    for (SQLResult.Row row : sqlResult) {
-                        schemas.add(row.getString("name"));
-                    }
-
-                    adapter.setSchemas(schemas);
-                    adapter.notifyDataSetChanged();
-                }
-            });
-
-            fetchSchemasTask.execute(this.database);
+            this.refresh();
         }
     }
 
@@ -81,11 +68,8 @@ public class TableListFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ActionBar ab = this.getActivity().getActionBar();
-
-        if (ab != null) {
-            ab.setTitle(this.database.getName());
-        }
+        ((AndroiDB) getActivity()).setToolbarTitle(this.database.getName());
+        ((AndroiDB) getActivity()).setToolbarSubtitle(this.database.getServer().getName());
     }
 
     @Override
@@ -96,16 +80,30 @@ public class TableListFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        try {
+            this.mListener = (OnTableSelectedListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnTableSelectedListener");
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
         switch (itemId) {
             case (R.id.action_edit): {
-                EditDatabaseFragment fragment = EditDatabaseFragment.newInstance(this.database);
-                this.getActivity().getFragmentManager().beginTransaction()
-                        .replace(R.id.context_fragment, fragment)
-                        .addToBackStack(null)
-                        .commit();
+                CreateOrEditDatabaseFragment fragment = CreateOrEditDatabaseFragment.newInstance(this.database);
+
+                ((AndroiDB) getActivity()).putDetailsFragment(fragment, true);
+                break;
+            }
+
+            case (R.id.action_query_runner): {
+
             }
         }
 
@@ -134,13 +132,46 @@ public class TableListFragment extends Fragment {
                         fetchTablesTask.execute(database);
                     }
                 } else {
-                    Intent intent = new Intent(getActivity(), TableActivity.class);
-                    intent.putExtra("table", adapter.getItem(i));
-                    startActivity(intent);
+                    mListener.onTableSelected(adapter.getItem(i));
                 }
             }
         });
 
+        this.swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
+        this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
+
         return view;
+    }
+
+    public void refresh() {
+        FetchSchemasTask fetchSchemasTask = new FetchSchemasTask(new SQLExecuteCallback() {
+            @Override
+            public void onResult(List<SQLResult> results) {}
+
+            @Override
+            public void onSingleResult(SQLResult sqlResult) {
+                List<String> schemas = new ArrayList<>();
+
+                for (SQLResult.Row row : sqlResult) {
+                    schemas.add(row.getString("name"));
+                }
+
+                adapter.setSchemas(schemas);
+                adapter.notifyDataSetChanged();
+
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        fetchSchemasTask.execute(this.database);
+    }
+
+    public interface OnTableSelectedListener {
+        public void onTableSelected(Table table);
     }
 }

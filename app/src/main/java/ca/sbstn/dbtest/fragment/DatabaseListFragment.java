@@ -1,12 +1,10 @@
 package ca.sbstn.dbtest.fragment;
 
 
-import android.app.ActionBar;
-import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,7 +21,7 @@ import android.widget.TextView;
 import java.util.List;
 
 import ca.sbstn.dbtest.R;
-import ca.sbstn.dbtest.activity.CreateOrEditServerActivity;
+import ca.sbstn.dbtest.activity.AndroiDB;
 import ca.sbstn.dbtest.adapter.DatabaseListAdapter;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
@@ -60,12 +58,8 @@ public class DatabaseListFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ActionBar ab = this.getActivity().getActionBar();
-        this.getActivity().invalidateOptionsMenu();
-
-        if (ab != null) {
-            ab.setTitle(this.server.getName());
-        }
+        ((AndroiDB) getActivity()).setToolbarColor(this.server.getColor(), true, true);
+        ((AndroiDB) getActivity()).setToolbarTitle(this.server.getName());
     }
 
     @Override
@@ -119,10 +113,9 @@ public class DatabaseListFragment extends Fragment {
 
         switch (itemId) {
             case R.id.action_edit: {
-                Intent intent = new Intent(getActivity(), CreateOrEditServerActivity.class);
-                intent.putExtra("server", this.server);
+                CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(this.server);
 
-                startActivity(intent);
+                ((AndroiDB) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
             }
         }
 

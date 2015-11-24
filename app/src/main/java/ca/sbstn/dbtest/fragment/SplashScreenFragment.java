@@ -2,12 +2,13 @@ package ca.sbstn.dbtest.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import ca.sbstn.dbtest.R;
+import ca.sbstn.dbtest.activity.AndroiDB;
 
 public class SplashScreenFragment extends Fragment {
     public SplashScreenFragment() {}
@@ -30,10 +31,14 @@ public class SplashScreenFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
+        ((AndroiDB) getActivity()).setShowActionbar(false);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+
+        ((AndroiDB) getActivity()).setShowActionbar(true);
     }
 }
