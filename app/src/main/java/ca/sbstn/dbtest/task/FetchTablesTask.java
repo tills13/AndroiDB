@@ -48,8 +48,6 @@ public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
         String url = database.getConnectionString();
 
         try {
-            Class.forName("org.postgresql.Driver").newInstance();
-
             Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
             ResultSet results = connection.getMetaData().getTables(null, this.schema, null, null);
 

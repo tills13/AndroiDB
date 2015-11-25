@@ -25,9 +25,10 @@ import ca.sbstn.dbtest.activity.AndroiDB;
 import ca.sbstn.dbtest.adapter.DatabaseListAdapter;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.sql.Server;
 import ca.sbstn.dbtest.task.FetchDatabasesTask;
+import ca.sbstn.dbtest.util.Colours;
 
 public class DatabaseListFragment extends Fragment {
     public static final String SERVER_PARAM = "SERVER";
@@ -39,6 +40,7 @@ public class DatabaseListFragment extends Fragment {
     private ListView listView;
     private SwipeRefreshLayout swipeRefreshLayout;
     private DatabaseListAdapter adapter;
+    private LinearLayout connectionInfo;
 
     private OnDatabaseSelectedListener mListener;
 
@@ -57,9 +59,6 @@ public class DatabaseListFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        ((AndroiDB) getActivity()).setToolbarColor(this.server.getColor(), true, true);
-        ((AndroiDB) getActivity()).setToolbarTitle(this.server.getName());
     }
 
     @Override
@@ -74,21 +73,6 @@ public class DatabaseListFragment extends Fragment {
 
             this.refresh();
         }
-    }
-
-    public void refresh() {
-        FetchDatabasesTask fetchDatabasesTask = new FetchDatabasesTask(this.getActivity(), this.adapter);
-        fetchDatabasesTask.setCallback(new SQLExecuteCallback() {
-            @Override
-            public void onResult(List<SQLResult> results) {}
-
-            @Override
-            public void onSingleResult(SQLResult result) {
-                swipeRefreshLayout.setRefreshing(false);
-            }
-        });
-
-        fetchDatabasesTask.execute(this.server);
     }
 
     @Override
@@ -139,12 +123,17 @@ public class DatabaseListFragment extends Fragment {
 
         this.swipeRefreshLayout = (SwipeRefreshLayout) this.internalView.findViewById(R.id.swipe_container);
 
-        ((LinearLayout) ((TextView) this.internalView.findViewById(R.id.server_name)).getParent()).setBackgroundColor(Color.parseColor(this.server.getColor()));
-        ((TextView) this.internalView.findViewById(R.id.server_name)).setText(this.server.getName());
+        int mColor = Color.parseColor(this.server.getColor());
+        mColor = Colours.darken(mColor);
+
+        this.connectionInfo = (LinearLayout) this.internalView.findViewById(R.id.connection_info_container);
+        this.connectionInfo.setBackgroundColor(mColor);
+
         ((TextView) this.internalView.findViewById(R.id.connected_as_info)).setText(String.format("Connected as %s", this.server.getUsername()));
 
         this.listView = (ListView) this.internalView.findViewById(R.id.list);
         this.listView.setAdapter(this.adapter);
+        this.listView.setEmptyView(this.internalView.findViewById(R.id.loading));
 
         this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -173,6 +162,31 @@ public class DatabaseListFragment extends Fragment {
         });
 
         return this.internalView;
+    }
+
+    public void refresh() {
+        this.server = ((AndroiDB) getActivity()).getServer(this.server.getId());
+
+        if (this.server == null) {
+            ((AndroiDB) getActivity()).getSupportFragmentManager().popBackStack();
+            return;
+        }
+
+        ((AndroiDB) getActivity()).setToolbarColor(this.server.getColor(), true, true);
+        ((AndroiDB) getActivity()).setToolbarTitle(this.server.getName());
+
+        FetchDatabasesTask fetchDatabasesTask = new FetchDatabasesTask(this.getActivity(), this.adapter);
+        fetchDatabasesTask.setCallback(new SQLExecuteCallback() {
+            @Override
+            public void onResult(List<SQLDataSet> results) {}
+
+            @Override
+            public void onSingleResult(SQLDataSet result) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        fetchDatabasesTask.execute(this.server);
     }
 
     public interface OnDatabaseSelectedListener {

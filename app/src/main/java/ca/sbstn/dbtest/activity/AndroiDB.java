@@ -17,6 +17,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 import ca.sbstn.dbtest.R;
@@ -27,7 +30,7 @@ import ca.sbstn.dbtest.fragment.SplashScreenFragment;
 import ca.sbstn.dbtest.fragment.TableListFragment;
 import ca.sbstn.dbtest.fragment.ViewDataFragment;
 import ca.sbstn.dbtest.sql.Database;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.sql.Server;
 import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.task.ExecuteQueryWithCallbackTask;
@@ -64,6 +67,7 @@ public class AndroiDB extends AppCompatActivity implements
         this.setSupportActionBar(this.toolbar);
 
         ActionBar actionBar = this.getSupportActionBar();
+
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(false);
             actionBar.setShowHideAnimationEnabled(true);
@@ -244,6 +248,28 @@ public class AndroiDB extends AppCompatActivity implements
         }
     }
 
+    public Server getServer(String id) {
+        try {
+            String serverJsonString = this.getSharedPreferences().getString(SHARED_PREFS_SERVER_PREFIX + id, "");
+            JSONObject serverJson = new JSONObject(serverJsonString);
+
+            Server server = new Server(
+                    serverJson.getString("id"),
+                    serverJson.getString("name"),
+                    serverJson.getString("host"),
+                    serverJson.getInt("port"),
+                    serverJson.getString("user"),
+                    serverJson.getString("password"),
+                    serverJson.getString("db"),
+                    serverJson.getString("color")
+            );
+
+            return server;
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
     private boolean attemptInstantiateJDBCDrivers() {
         try {
             Class.forName("org.postgresql.Driver").newInstance();
@@ -280,12 +306,12 @@ public class AndroiDB extends AppCompatActivity implements
 
     @Override
     public void onTableSelected(final Table table) {
-        ExecuteQueryWithCallbackTask executeQueryWithCallbackTask = new ExecuteQueryWithCallbackTask(this, table.getDatabase(), new SQLExecuteCallback() {
+        ExecuteQueryWithCallbackTask executeQueryWithCallbackTask = new ExecuteQueryWithCallbackTask(this, table, new SQLExecuteCallback() {
             @Override
-            public void onResult(List<SQLResult> results) {}
+            public void onResult(List<SQLDataSet> results) {}
 
             @Override
-            public void onSingleResult(SQLResult result) {
+            public void onSingleResult(SQLDataSet result) {
                 ViewDataFragment viewDataFragment = ViewDataFragment.newInstance(result);
                 putDetailsFragment(viewDataFragment, true);
             }

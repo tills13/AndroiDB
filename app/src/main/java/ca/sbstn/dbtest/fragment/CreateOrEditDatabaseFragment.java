@@ -21,7 +21,7 @@ import java.util.List;
 import ca.sbstn.dbtest.R;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.task.ExecuteQueryWithCallbackTask;
 
 /**
@@ -103,11 +103,11 @@ public class CreateOrEditDatabaseFragment extends Fragment {
 
         SQLExecuteCallback sqlExecuteCallback = new SQLExecuteCallback() {
             @Override
-            public void onResult(List<SQLResult> results) {
+            public void onResult(List<SQLDataSet> results) {
                 boolean errored = false;
                 String error = "";
 
-                for (SQLResult result : results) {
+                for (SQLDataSet result : results) {
                     if (result.getError() != null) {
                         errored = true;
                         error = result.getError().getMessage();
@@ -128,7 +128,7 @@ public class CreateOrEditDatabaseFragment extends Fragment {
             }
 
             @Override
-            public void onSingleResult(SQLResult result) {
+            public void onSingleResult(SQLDataSet result) {
                 boolean errored = false;
                 String error = "";
 

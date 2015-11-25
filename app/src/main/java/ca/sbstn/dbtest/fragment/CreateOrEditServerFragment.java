@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,6 +27,7 @@ import org.json.JSONObject;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Arrays;
+import java.util.Random;
 
 import ca.sbstn.dbtest.R;
 import ca.sbstn.dbtest.activity.AndroiDB;
@@ -116,11 +116,7 @@ public class CreateOrEditServerFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ActionBar ab = ((AndroiDB) getActivity()).getSupportActionBar();
-
-        if (ab != null) {
-            ab.setTitle(this.server == null ? "New Server" : this.server.getName());
-        }
+        ((AndroiDB) getActivity()).setToolbarTitle(this.server == null ? "New Server" : this.server.getName());
 
         this.refreshColorChooser();
     }
@@ -190,6 +186,10 @@ public class CreateOrEditServerFragment extends Fragment {
     public boolean saveServer() {
         JSONObject mServer = new JSONObject();
 
+        String id;
+
+        do { id = this.generateId(); } while (((AndroiDB) getActivity()).getServer(id) != null);
+
         String name = ((EditText) this.view.findViewById(R.id.server_name)).getText().toString();
         String host = ((EditText) this.view.findViewById(R.id.server_host)).getText().toString();
         String mPort = ((EditText) this.view.findViewById(R.id.server_port)).getText().toString();
@@ -208,7 +208,8 @@ public class CreateOrEditServerFragment extends Fragment {
         if (name.equals("")) return false;
 
         try {
-            mServer.put("name", name)
+            mServer.put("id", id)
+                    .put("name", name)
                     .put("host", host)
                     .put("port", port)
                     .put("db", defaultDatabase)
@@ -220,19 +221,23 @@ public class CreateOrEditServerFragment extends Fragment {
             return false;
         }
 
-        String prefsKeyForName = this.getPrefsKeyForName(name);
-        SharedPreferences sharedPreferences = ((AndroiDB) getActivity()).getSharedPreferences();
-
-        if (this.server == null && sharedPreferences.contains(prefsKeyForName)) { // new server, name already taken
-
+        if (this.server == null) {
+            this.server = new Server(id, name, host, port, user, password, defaultDatabase, color);
         } else {
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            if (this.server != null && !this.server.getName().equals(name)) {
-                editor.remove(this.getPrefsKeyForName(this.server.getName()));
-            }
-
-            editor.putString(prefsKeyForName, mServer.toString()).commit();
+            this.server.setName(name);
+            this.server.setHost(host);
+            this.server.setPort(port);
+            this.server.setUsername(user);
+            this.server.setPassword(password);
+            this.server.setDefaultDatabase(defaultDatabase);
+            this.server.setColor(color);
         }
+
+        String prefsKeyForId = this.getPrefsKeyForId(this.server.getId());
+
+        SharedPreferences sharedPreferences = ((AndroiDB) getActivity()).getSharedPreferences();
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(prefsKeyForId, mServer.toString()).commit();
 
         return true;
     }
@@ -244,7 +249,7 @@ public class CreateOrEditServerFragment extends Fragment {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     ((AndroiDB) getActivity()).getSharedPreferences()
-                            .edit().remove(getPrefsKeyForName(server.getName())).commit();
+                            .edit().remove(getPrefsKeyForId(server.getId())).commit();
 
                     getActivity().getSupportFragmentManager().popBackStack();
                     getActivity().getSupportFragmentManager().findFragmentById(R.id.context_fragment).onResume();
@@ -289,7 +294,6 @@ public class CreateOrEditServerFragment extends Fragment {
             @Override
             protected void onPostExecute(Boolean result) {
                 super.onPostExecute(result);
-                //container.removeView(loadingBar);
 
                 String message = result ? "Successfully connected" : "Connection failed: " + this.exception.getMessage();
 
@@ -301,7 +305,18 @@ public class CreateOrEditServerFragment extends Fragment {
         testConnectionTask.execute("");
     }
 
-    private String getPrefsKeyForName(String name) {
-        return AndroiDB.SHARED_PREFS_SERVER_PREFIX + name.toLowerCase().replaceAll("[^\\w]", "");
+    private String generateId() {
+        String id = "";
+        String [] alphabet = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"};
+
+        for (int i = 0; i < 8; i++) {
+            id = id + alphabet[new Random().nextInt(alphabet.length)];
+        }
+
+        return id;
+    }
+
+    private String getPrefsKeyForId(String id) {
+        return AndroiDB.SHARED_PREFS_SERVER_PREFIX + id;
     }
 }

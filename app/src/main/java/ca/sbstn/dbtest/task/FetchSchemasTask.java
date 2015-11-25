@@ -11,13 +11,13 @@ import java.sql.SQLException;
 
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.sql.Server;
 
 /**
  * Created by tills13 on 2015-07-12.
  */
-public class FetchSchemasTask extends AsyncTask<Database, Void, SQLResult> {
+public class FetchSchemasTask extends AsyncTask<Database, Void, SQLDataSet> {
     private SQLExecuteCallback callback;
 
     public FetchSchemasTask(SQLExecuteCallback callback) {
@@ -25,7 +25,7 @@ public class FetchSchemasTask extends AsyncTask<Database, Void, SQLResult> {
     }
 
     @Override
-    protected SQLResult doInBackground(Database ... databases) {
+    protected SQLDataSet doInBackground(Database ... databases) {
         Database database = databases[0];
         Server server = database.getServer();
 
@@ -36,7 +36,7 @@ public class FetchSchemasTask extends AsyncTask<Database, Void, SQLResult> {
             PreparedStatement statement = connection.prepareStatement(query);
             ResultSet results = statement.executeQuery();
 
-            return SQLResult.from(results);
+            return SQLDataSet.from(results);
         } catch (SQLException e) {
             Log.d("FETCHSCHEMASTASK", e.getMessage());
             return null;
@@ -49,11 +49,11 @@ public class FetchSchemasTask extends AsyncTask<Database, Void, SQLResult> {
     }
 
     @Override
-    protected void onPostExecute(SQLResult sqlResult) {
-        super.onPostExecute(sqlResult);
+    protected void onPostExecute(SQLDataSet sqlDataSet) {
+        super.onPostExecute(sqlDataSet);
 
         if (this.callback != null) {
-            this.callback.onSingleResult(sqlResult);
+            this.callback.onSingleResult(sqlDataSet);
         }
     }
 }

@@ -21,7 +21,7 @@ import java.util.List;
 import ca.sbstn.dbtest.R;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Key;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.sql.SQLUtils;
 import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.task.ExecuteQueryTask;
@@ -42,7 +42,7 @@ public class RowInspectorActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_row_inspector);
+        setContentView(R.layout.row_inspector);
 
         this.index = getIntent().getIntExtra("rowIndex", 0);
         this.table = (Table) getIntent().getSerializableExtra("table");
@@ -101,17 +101,17 @@ public class RowInspectorActivity extends Activity {
         // generate callback to build data after row is fetched
         SQLExecuteCallback callback = new SQLExecuteCallback() {
             @Override
-            public void onResult(List<SQLResult> results) {}
+            public void onResult(List<SQLDataSet> results) {}
 
             @Override
-            public void onSingleResult(SQLResult sqlResult) {
+            public void onSingleResult(SQLDataSet sqlResult) {
                 try {
                     LayoutInflater inflater = LayoutInflater.from(RowInspectorActivity.this);
 
-                    List<SQLResult.Column> columns = sqlResult.getColumns();
-                    SQLResult.Row row = sqlResult.getRow(0); // there should only be one row
+                    List<SQLDataSet.Column> columns = sqlResult.getColumns();
+                    SQLDataSet.Row row = sqlResult.getRow(0); // there should only be one row
 
-                    for (SQLResult.Column column : columns) {
+                    for (SQLDataSet.Column column : columns) {
                         String name = column.getName();
                         String type = column.getType();
 
@@ -140,18 +140,17 @@ public class RowInspectorActivity extends Activity {
 
         FetchTableKeysTask fetchTableKeysTask = new FetchTableKeysTask(this, new SQLExecuteCallback() {
             @Override
-            public void onResult(List<SQLResult> results) {
+            public void onResult(List<SQLDataSet> results) {
                 showPrimaryKeys();
                 showForeignKeys();
             }
 
             @Override
-            public void onSingleResult(SQLResult sqlResult) {
+            public void onSingleResult(SQLDataSet sqlResult) {
                 showPrimaryKeys();
                 showForeignKeys();
             }
         });
-
         fetchTableKeysTask.execute(this.table);
     }
 

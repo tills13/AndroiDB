@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Created by tills13 on 2015-11-18.
  */
-public class SQLResult implements Iterable<SQLResult.Row>, Serializable {
+public class SQLDataSet implements Iterable<SQLDataSet.Row>, Serializable {
     private String query;
     private List<Column> columns;
     private List<Row> rows;
@@ -21,17 +21,17 @@ public class SQLResult implements Iterable<SQLResult.Row>, Serializable {
 
     private Table table;
 
-    public SQLResult() {
+    public SQLDataSet() {
         this.columns = new ArrayList<>(); // column definitions
         this.rows = new ArrayList<>();
     }
 
-    public static SQLResult from(ResultSet results) {
-        SQLResult sqlResult = new SQLResult();
+    public static SQLDataSet from(ResultSet results) {
+        SQLDataSet sqlDataSet = new SQLDataSet();
 
         try {
             ResultSetMetaData resultSetMetaData = results.getMetaData();
-            sqlResult.query = results.getStatement().toString();
+            //sqlDataSet.query = results.getStatement().toString();
 
             int numColumns = resultSetMetaData.getColumnCount();
 
@@ -39,16 +39,16 @@ public class SQLResult implements Iterable<SQLResult.Row>, Serializable {
                 String type = resultSetMetaData.getColumnTypeName(i + 1);
                 String name = resultSetMetaData.getColumnName(i + 1);
 
-                sqlResult.columns.add(new Column(type, name));
+                sqlDataSet.columns.add(new Column(type, name));
             }
 
-            while (results.next()) sqlResult.rows.add(Row.from(sqlResult, results));
+            while (results.next()) sqlDataSet.rows.add(Row.from(sqlDataSet, results));
         } catch (SQLException e) {
             Log.d("SQLResult", e.getMessage());
             return null;
         }
 
-        return sqlResult;
+        return sqlDataSet;
     }
 
     public Row getRow(int index) {
@@ -104,8 +104,7 @@ public class SQLResult implements Iterable<SQLResult.Row>, Serializable {
         return new SQLResultIterator(this);
     }
 
-
-    public static class Column {
+    public static class Column implements Serializable {
         private String type;
         private String name;
 
@@ -123,20 +122,20 @@ public class SQLResult implements Iterable<SQLResult.Row>, Serializable {
         }
     }
 
-    public static class Row {
-        private SQLResult sqlResult;
+    public static class Row implements Serializable {
+        private SQLDataSet sqlDataSet;
         private List<Object> data;
 
-        public Row(SQLResult sqlResult) {
-            this.sqlResult = sqlResult;
+        public Row(SQLDataSet sqlDataSet) {
+            this.sqlDataSet = sqlDataSet;
             this.data = new ArrayList<>();
         }
 
-        public static Row from(SQLResult sqlResult, ResultSet results) {
-            Row row = new Row(sqlResult);
+        public static Row from(SQLDataSet sqlDataSet, ResultSet results) {
+            Row row = new Row(sqlDataSet);
 
             try {
-                for (int i = 1; i < (row.sqlResult.getColumnCount() + 1); i++) {
+                for (int i = 1; i < (row.sqlDataSet.getColumnCount() + 1); i++) {
                     row.data.add(results.getObject(i));
                 }
             } catch (SQLException e) {
@@ -152,7 +151,7 @@ public class SQLResult implements Iterable<SQLResult.Row>, Serializable {
         }
 
         public Object getColumn(String column) {
-            return this.data.get(this.sqlResult.getColumnIndex(column));
+            return this.data.get(this.sqlDataSet.getColumnIndex(column));
         }
 
         public String getString(int index) {
@@ -164,13 +163,17 @@ public class SQLResult implements Iterable<SQLResult.Row>, Serializable {
             Object object = this.getColumn(column);
             return object == null ? "" : object.toString();
         }
+
+        public SQLDataSet getDataSet() {
+            return this.sqlDataSet;
+        }
     }
 
-    class SQLResultIterator implements Iterator<SQLResult.Row> {
-        private SQLResult result;
+    class SQLResultIterator implements Iterator<SQLDataSet.Row> {
+        private SQLDataSet result;
         private int cursor;
 
-        public SQLResultIterator(SQLResult result) {
+        public SQLResultIterator(SQLDataSet result) {
             this.result = result;
             this.cursor = 0;
         }

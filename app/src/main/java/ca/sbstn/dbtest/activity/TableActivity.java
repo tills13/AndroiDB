@@ -14,7 +14,7 @@ import java.util.List;
 
 import ca.sbstn.dbtest.R;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.task.ExecuteQueryTask;
 import ca.sbstn.dbtest.task.FetchTableKeysTask;
@@ -115,12 +115,12 @@ public class TableActivity extends Activity {
         }
 
         @Override
-        public void onResult(List<SQLResult> results) {
+        public void onResult(List<SQLDataSet> results) {
             //this.actionBar.setSubtitle(results.getRow(0).getString("count"));
         }
 
         @Override
-        public void onSingleResult(SQLResult result) {
+        public void onSingleResult(SQLDataSet result) {
 
         }
     }

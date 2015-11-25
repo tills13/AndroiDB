@@ -10,14 +10,14 @@ import java.util.List;
 
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.view.SQLTableLayout;
 
 /**
  * Created by tills13 on 2015-07-12.
  */
-public class ExecuteQueryTask extends AsyncTask<String, Void, List<SQLResult>> {
+public class ExecuteQueryTask extends AsyncTask<String, Void, List<SQLDataSet>> {
     private static final String TAG = "EXECUTEQUERYTASK";
 
     private Context context;
@@ -51,8 +51,8 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, List<SQLResult>> {
     }
 
     @Override
-    protected List<SQLResult> doInBackground(String ... queries) {
-        List<SQLResult> results = new ArrayList<>();
+    protected List<SQLDataSet> doInBackground(String ... queries) {
+        List<SQLDataSet> results = new ArrayList<>();
 
         /*Server server = this.database.getServer();
         String url = String.format("jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), this.database.getName());
@@ -99,21 +99,17 @@ public class ExecuteQueryTask extends AsyncTask<String, Void, List<SQLResult>> {
     }
 
     @Override
-    protected void onPostExecute(List<SQLResult> sqlResult) {
-        super.onPostExecute(sqlResult);
+    protected void onPostExecute(List<SQLDataSet> sqlDataSet) {
+        super.onPostExecute(sqlDataSet);
 
         if (this.progressBar != null) {
             ViewGroup parent = ((ViewGroup) this.progressBar.getParent());
             if (parent != null) parent.removeView(this.progressBar);
         }
 
-        if (this.tableLayout != null) {
-            this.tableLayout.setTable(table);
-        }
-
         if (this.callback != null) {
-            if (sqlResult.size() == 1) callback.onSingleResult(sqlResult.get(0));
-            else callback.onResult(sqlResult);
+            if (sqlDataSet.size() == 1) callback.onSingleResult(sqlDataSet.get(0));
+            else callback.onResult(sqlDataSet);
         }
     }
 

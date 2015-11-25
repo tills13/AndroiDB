@@ -15,14 +15,14 @@ import java.util.List;
 
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.sql.Server;
 import ca.sbstn.dbtest.sql.Table;
 
 /**
  * Created by tills13 on 2015-07-12.
  */
-public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<SQLResult>> {
+public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<SQLDataSet>> {
     private static final String TAG = "EXECUTEQUERYTASK";
 
     private Context context;
@@ -56,22 +56,25 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<S
     }
 
     public void setExpectResult(boolean expectResult) {
-        this.expectResult = true;
+        this.expectResult = expectResult;
     }
 
     @Override
-    protected List<SQLResult> doInBackground(String ... queries) {
-        List<SQLResult> results = new ArrayList<>();
+    protected List<SQLDataSet> doInBackground(String ... queries) {
+        List<SQLDataSet> results = new ArrayList<>();
 
         //Connection connection;
+        if (this.database == null && this.table != null) {
+            this.database = this.table.getDatabase();
+        }
 
         Server server = this.database.getServer();
         String url = String.format("jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), usePostgres ? "postgres" : this.database.getName());
 
 
         for (String query : queries) {
-            SQLResult sqlResult = new SQLResult();
-            sqlResult.setQuery(query);
+            SQLDataSet sqlDataSet = new SQLDataSet();
+            sqlDataSet.setQuery(query);
 
             try {
                 Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
@@ -79,10 +82,10 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<S
 
                 if (expectResult) {
                     ResultSet resultSet = statement.executeQuery(query);
-                    sqlResult = SQLResult.from(resultSet);
+                    sqlDataSet = SQLDataSet.from(resultSet);
 
-                    if (sqlResult != null) {
-                        sqlResult.setTable(table);
+                    if (sqlDataSet != null) {
+                        sqlDataSet.setTable(table);
                     } else {
                         throw new Exception("result expected");
                     }
@@ -90,20 +93,20 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<S
                     statement.executeUpdate(query);
                 }
             } catch (Exception e) {
-                Log.d("EXECUTEQUERYCALLBACK", e.getMessage());
-                sqlResult = new SQLResult();
-                sqlResult.setError(e);
+                Log.d(TAG, e.getMessage());
+                sqlDataSet = new SQLDataSet();
+                sqlDataSet.setError(e);
             }
 
-            results.add(sqlResult);
+            results.add(sqlDataSet);
         }
 
         return results;
     }
 
     @Override
-    protected void onPostExecute(List<SQLResult> sqlResult) {
-        super.onPostExecute(sqlResult);
+    protected void onPostExecute(List<SQLDataSet> sqlDataSet) {
+        super.onPostExecute(sqlDataSet);
 
         if (this.progressBar != null) {
             ViewGroup parent = ((ViewGroup) this.progressBar.getParent());
@@ -111,8 +114,8 @@ public class ExecuteQueryWithCallbackTask extends AsyncTask<String, Void, List<S
         }
 
         if (this.callback != null) {
-            if (sqlResult.size() == 1) callback.onSingleResult(sqlResult.get(0));
-            else callback.onResult(sqlResult);
+            if (sqlDataSet.size() == 1) callback.onSingleResult(sqlDataSet.get(0));
+            else callback.onResult(sqlDataSet);
         }
     }
 

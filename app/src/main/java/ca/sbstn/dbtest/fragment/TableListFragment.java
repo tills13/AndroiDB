@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -22,7 +23,7 @@ import ca.sbstn.dbtest.activity.AndroiDB;
 import ca.sbstn.dbtest.adapter.TableListAdapter;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.sql.Database;
-import ca.sbstn.dbtest.sql.SQLResult;
+import ca.sbstn.dbtest.sql.SQLDataSet;
 import ca.sbstn.dbtest.sql.Table;
 import ca.sbstn.dbtest.task.FetchSchemasTask;
 import ca.sbstn.dbtest.task.FetchTablesTask;
@@ -137,6 +138,23 @@ public class TableListFragment extends Fragment {
             }
         });
 
+        this.listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView absListView, int i) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView absListView, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                TableListAdapter adapter = ((TableListAdapter) ((ListView) absListView).getAdapter());
+                if (adapter != null) {
+                    String header = adapter.getHeader(firstVisibleItem);
+
+                    ((AndroiDB) getActivity()).setToolbarSubtitle(firstVisibleItem > 0 ? header : "");
+                }
+            }
+        });
+
         this.swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
         this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -151,13 +169,13 @@ public class TableListFragment extends Fragment {
     public void refresh() {
         FetchSchemasTask fetchSchemasTask = new FetchSchemasTask(new SQLExecuteCallback() {
             @Override
-            public void onResult(List<SQLResult> results) {}
+            public void onResult(List<SQLDataSet> results) {}
 
             @Override
-            public void onSingleResult(SQLResult sqlResult) {
+            public void onSingleResult(SQLDataSet sqlResult) {
                 List<String> schemas = new ArrayList<>();
 
-                for (SQLResult.Row row : sqlResult) {
+                for (SQLDataSet.Row row : sqlResult) {
                     schemas.add(row.getString("name"));
                 }
 

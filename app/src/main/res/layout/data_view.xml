@@ -1,38 +1,11 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="ca.sbstn.dbtest.activity.TableActivity">
-
-    <ScrollView
-        android:overScrollMode="ifContentScrolls"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/paging_buttons"
-        tools:context=".MainActivity">
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <HorizontalScrollView
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:overScrollMode="ifContentScrolls"
-                tools:context=".MainActivity">
-                <ca.sbstn.dbtest.view.SQLTableLayout
-                    android:id="@+id/data_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent" />
-            </HorizontalScrollView>
-        </LinearLayout>
-    </ScrollView>
+    android:layout_height="match_parent">
     <LinearLayout
         android:id="@+id/paging_buttons"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
         android:weightSum="2"
         android:background="#1f000000"
@@ -53,4 +26,9 @@
             style="?android:buttonBarButtonStyle"
             android:layout_weight="1"/>
     </LinearLayout>
+    <ca.sbstn.dbtest.view.SQLTableLayout
+        android:id="@+id/sql_table_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/paging_buttons"/>
 </RelativeLayout>

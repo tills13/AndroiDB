@@ -1,7 +1,6 @@
 package ca.sbstn.dbtest.fragment;
 
 
-import android.app.ActionBar;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -53,12 +52,7 @@ public class ServerListFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        String name = getActivity().getResources().getString(R.string.app_name);
-        ActionBar ab = this.getActivity().getActionBar();
-
-        if (ab != null) {
-            ab.setTitle(name);
-        }
+        ((AndroiDB) getActivity()).setToolbarTitle("AndroiDB");
     }
 
     @Override
@@ -89,9 +83,6 @@ public class ServerListFragment extends Fragment {
         this.adapter.setServers(this.loadServers());
         this.adapter.notifyDataSetChanged();
 
-        //Log.d("color", Color.parseColor("#2b303b") + "");
-        //Log.d("color", R.color.app_theme_color + "");
-
         ((AndroiDB) getActivity()).setToolbarTitle(getActivity().getResources().getString(R.string.app_name))
                 .setToolbarColor(Color.parseColor("#2b303b"), true, true);
     }
@@ -120,12 +111,6 @@ public class ServerListFragment extends Fragment {
                 CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(server);
 
                 ((AndroiDB) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
-
-                /*((AndroiDB) getActivity()).getSupportFragmentManager().beginTransaction()
-                        .setCustomAnimations(R.anim.slide_in, R.anim.snackbar_out)
-                        .replace(R.id.context_fragment, createOrEditServerFragment)
-                        .addToBackStack(null)
-                        .commit();*/
 
                 return true;
             }
@@ -164,11 +149,11 @@ public class ServerListFragment extends Fragment {
 
         try {
             for (String key : preferences.keySet()) {
-                Log.d("key", key);
                 if (key.startsWith(AndroiDB.SHARED_PREFS_SERVER_PREFIX)) {
                     Object something = preferences.get(key);
                     JSONObject mServer = new JSONObject(something.toString());
                     Server server = new Server(
+                            mServer.getString("id"),
                             mServer.getString("name"),
                             mServer.getString("host"),
                             mServer.getInt("port"),
@@ -192,5 +177,4 @@ public class ServerListFragment extends Fragment {
     public interface OnServerSelectedListener {
         public void onServerSelected(Server server);
     }
-
 }

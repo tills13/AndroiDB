@@ -67,4 +67,6 @@
     <string name="hint_name">Database Name</string>
     <string name="hint_owner">Database Owner</string>
     <string name="hint_comment">Database Comment</string>
+
+    <string name="loading_databases">Loading databases&#8230;</string>
 </resources>

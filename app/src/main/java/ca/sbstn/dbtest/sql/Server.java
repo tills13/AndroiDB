@@ -23,8 +23,7 @@ public class Server implements Serializable {
             "#FF8A65"
     };
 
-
-
+    private String id;
     private String name;
 
     private String host;
@@ -38,7 +37,7 @@ public class Server implements Serializable {
     private String defaultDatabase;
     private List<Database> databases; // list of all databases
 
-    public Server(String name, String host, int port, String username, String password, String defaultDatabase, String color) {
+    public Server(String id, String name, String host, int port, String username, String password, String defaultDatabase, String color) {
         this.name = name;
         this.host = host;
         this.port = port;
@@ -49,16 +48,12 @@ public class Server implements Serializable {
         this.defaultDatabase = defaultDatabase;
     }
 
-    public Server(String name, String host, int port, String username, String password) {
-        this(name, host, port, username, password, "postgres", "#E57373");
+    public Server(String id, String name, String host, int port, String username, String password) {
+        this(id, name, host, port, username, password, "postgres", "#E57373");
     }
 
-    public String getDefaultDatabase() {
-        return this.defaultDatabase;
-    }
-
-    public void setDefaultDatabase(String database) {
-        this.defaultDatabase = database;
+    public String getId() {
+        return this.id;
     }
 
     public String getName() {
@@ -71,6 +66,10 @@ public class Server implements Serializable {
 
     public int getPort() {
         return this.port;
+    }
+
+    public String getDefaultDatabase() {
+        return this.defaultDatabase;
     }
 
     public String getUsername() {
@@ -95,6 +94,10 @@ public class Server implements Serializable {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public void setDefaultDatabase(String database) {
+        this.defaultDatabase = database;
     }
 
     public void setUsername(String username) {
