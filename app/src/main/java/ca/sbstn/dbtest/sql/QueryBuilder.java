@@ -1,16 +1,36 @@
 package ca.sbstn.dbtest.sql;
 
-/**
- * Created by tills13 on 2015-07-11.
- */
 public class QueryBuilder {
-    private String mode;
+	public static final int TYPE_SELECT = 0;
+	public static final int TYPE_DELETE = 1;
+	public static final int TYPE_UPDATE = 2;
+	public static final int TYPE_INSERT = 3;
 
-    public QueryBuilder() {
-        this.mode = "select";
-    }
+	private int type = QueryBuilder.TYPE_SELECT;
 
-    public QueryBuilder select() {
-        return this;
-    }
+	private String[] selects;
+
+	//private 
+
+
+
+	public QueryBuilder() {
+
+	}
+
+	public QueryBuilder select(String ... selects) {
+		this.type = QueryBuilder.TYPE_SELECT;
+
+		this.selects = selects;
+		return this;
+	}
+
+	public String getQuery() {
+		return this.toString();
+	}
+
+	@Override
+	public String toString() {
+		return "";
+	}
 }

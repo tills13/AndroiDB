@@ -60,7 +60,6 @@ public class ServerListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.adapter = new ServerListAdapter(getActivity());
-        this.adapter.setServers(this.loadServers());
     }
 
     @Override
@@ -109,7 +108,6 @@ public class ServerListFragment extends Fragment {
                 Server server = (Server) serverListAdapter.getItem(i);
 
                 CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(server);
-
                 ((AndroiDB) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
 
                 return true;
@@ -149,6 +147,7 @@ public class ServerListFragment extends Fragment {
 
         try {
             for (String key : preferences.keySet()) {
+                Log.e("KEY", key);
                 if (key.startsWith(AndroiDB.SHARED_PREFS_SERVER_PREFIX)) {
                     Object something = preferences.get(key);
                     JSONObject mServer = new JSONObject(something.toString());

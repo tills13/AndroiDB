@@ -7,6 +7,7 @@
     android:padding="@dimen/cell_padding">
     <TextView
         android:id="@+id/cell_text"
+        android:textColor="@color/grey_200"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent" />
 </LinearLayout>

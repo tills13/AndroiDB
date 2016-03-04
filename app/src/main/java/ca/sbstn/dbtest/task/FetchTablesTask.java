@@ -73,18 +73,5 @@ public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
 
         this.adapter.setItems(this.schema, results);
         this.adapter.notifyDataSetChanged();
-
-        /*ListView tableList = (ListView) ((DatabaseActivity) this.context).findViewById(R.id.table_list);
-        ((DatabaseActivity) this.context).setRefreshing(false);
-
-        if (tableList.getAdapter() == null) {
-            tableList.setAdapter(new TableListAdapter(this.context));
-        }
-
-        ((TableListAdapter) tableList.getAdapter()).setItems(results);
-        ((TableListAdapter) tableList.getAdapter()).notifyDataSetChanged();
-
-        tableList.requestLayout();
-        tableList.invalidate();*/
     }
 }

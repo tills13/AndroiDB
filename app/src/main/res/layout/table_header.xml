@@ -1,40 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_vertical"
-    android:padding="16dp">
+    android:orientation="horizontal"
+    android:background="@color/colorPrimaryDark">
     <ImageView
         android:id="@+id/icon"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
-        android:layout_marginEnd="16dp" />
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginStart="16dp"
+        android:contentDescription="@string/app_name"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:background="?android:attr/selectableItemBackground"
-        android:gravity="center_vertical">
-        <TextView
-            android:id="@+id/primary_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:elegantTextHeight="true"
-            android:textColor="@color/grey_300"
-            android:textAllCaps="true"
-            android:gravity="start|center_vertical"
-            android:fontFamily="sans-serif-medium" />
-        <TextView
-            android:id="@+id/secondary_title"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:textColor="@color/grey_500"
-            android:fontFamily="sans-serif-light"
-            android:text="asdasd"
-            android:gravity="end|center_vertical" />
+        android:gravity="center_vertical"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/primary_title"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textSize="17.5sp"
+                android:textColor="@color/grey_200"
+                android:textAllCaps="true"
+                android:elegantTextHeight="true"
+                android:gravity="start|center_vertical"
+                android:fontFamily="sans-serif-medium"
+                android:singleLine="true"/>
+            <TextView
+                android:id="@+id/secondary_title"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:textColor="@color/grey_600"
+                android:fontFamily="sans-serif-light"
+                android:gravity="end|center_vertical" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

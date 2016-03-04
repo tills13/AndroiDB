@@ -21,7 +21,8 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/activity_servers_no_servers"/>
+            android:text="@string/activity_servers_no_servers"
+            android:textColor="@color/grey_200"
+            android:gravity="center"/>
     </LinearLayout>
 </LinearLayout>

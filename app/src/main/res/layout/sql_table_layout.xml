@@ -15,7 +15,8 @@
                 android:id="@+id/vertical_scroll_container"
                 android:visibility="visible"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
                 android:elevation="0dp">
                 <TableLayout
                     android:id="@+id/data_view"
@@ -27,10 +28,9 @@
                 android:id="@+id/header_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_above="@id/vertical_scroll_container"
-                android:stretchColumns="*"
-                android:background="@color/blue_grey_500"
-                android:elevation="1dp"/>
+                android:layout_alignParentTop="true"
+                android:translationY="-168px"
+                android:elevation="4dp"/>
         </RelativeLayout>
     </HorizontalScrollView>
 </LinearLayout>

@@ -2,7 +2,6 @@ package ca.sbstn.dbtest.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,9 +34,6 @@ public class ServerListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        int colorEven = this.context.getResources().getColor(R.color.table_row_even);
-        int colorOdd = this.context.getResources().getColor(R.color.table_row_odd);
-
         Server server = (Server) this.getItem(position);
         LayoutInflater inflater = LayoutInflater.from(this.context);
 
@@ -45,15 +41,15 @@ public class ServerListAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.server_item, parent, false);
         }
 
-        convertView.findViewById(R.id.short_name).getBackground().setColorFilter(Color.parseColor(server.getColor()), PorterDuff.Mode.MULTIPLY);
+        convertView.findViewById(R.id.color_bar).setBackgroundColor(Color.parseColor(server.getColor()));
 
-        ((TextView) convertView.findViewById(R.id.short_name)).setText(server.getName().charAt(0) + "");
+        String hostString = server.getHost() + ":" + server.getPort();
+
         ((TextView) convertView.findViewById(R.id.server_name)).setText(server.getName());
-        ((TextView) convertView.findViewById(R.id.host_ip_port)).setText(server.getHost() + ":" + server.getPort());
+        ((TextView) convertView.findViewById(R.id.host_ip_port)).setText(hostString);
         ((TextView) convertView.findViewById(R.id.host_username)).setText(server.getUsername());
 
-        if (position % 2 == 0) convertView.setBackgroundColor(colorEven);
-        else convertView.setBackgroundColor(colorOdd);
+        if (position % 2 == 0) convertView.setBackgroundColor(Color.argb((int) Math.floor(0.05 * 255), 255, 255, 255));
 
         return convertView;
     }

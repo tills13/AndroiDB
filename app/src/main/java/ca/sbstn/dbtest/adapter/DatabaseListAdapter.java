@@ -1,6 +1,8 @@
 package ca.sbstn.dbtest.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,9 +38,6 @@ public class DatabaseListAdapter extends BaseAdapter {
         LayoutInflater inflater = LayoutInflater.from(this.context);
         Database database = (Database) this.getItem(position);
 
-        int colorEven = this.context.getResources().getColor(R.color.table_row_even);
-        int colorOdd = this.context.getResources().getColor(R.color.table_row_odd);
-
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.database_item, parent, false);
         }
@@ -47,14 +46,14 @@ public class DatabaseListAdapter extends BaseAdapter {
         ((TextView) convertView.findViewById(R.id.database_owner)).setText(database.getOwner());
 
         if (database.getComment() != null && database.getComment().equals("")) {
-            ((TextView) convertView.findViewById(R.id.database_comment)).setVisibility(View.GONE);
+            convertView.findViewById(R.id.database_comment).setVisibility(View.GONE);
         } else {
-            ((TextView) convertView.findViewById(R.id.database_comment)).setVisibility(View.VISIBLE);
+            convertView.findViewById(R.id.database_comment).setVisibility(View.VISIBLE);
             ((TextView) convertView.findViewById(R.id.database_comment)).setText(database.getComment());
         }
 
-        if (position % 2 == 0) convertView.setBackgroundColor(colorEven);
-        else convertView.setBackgroundColor(colorOdd);
+        if (position % 2 == 0) convertView.setBackgroundColor(Color.argb((int) Math.floor(0.05 * 255), 255, 255, 255));
+        //else convertView.setBackgroundColor(colorOdd);
 
         return convertView;
     }
@@ -67,6 +66,17 @@ public class DatabaseListAdapter extends BaseAdapter {
     @Override
     public Object getItem(int position) {
         return this.databases.get(position);
+    }
+
+    public Object getByName(String name) {
+        for (Database database : this.databases) {
+            Log.d("asdasd", database.getName() + " " + name);
+            if (database.getName().toLowerCase().equals(name.toLowerCase())) {
+                return database;
+            }
+        }
+
+        return null;
     }
 
     @Override

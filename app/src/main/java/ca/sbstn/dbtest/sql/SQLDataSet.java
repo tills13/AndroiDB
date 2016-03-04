@@ -52,6 +52,7 @@ public class SQLDataSet implements Iterable<SQLDataSet.Row>, Serializable {
     }
 
     public Row getRow(int index) {
+        if (index > this.getRowCount()) return null;
         return this.rows.get(index);
     }
 

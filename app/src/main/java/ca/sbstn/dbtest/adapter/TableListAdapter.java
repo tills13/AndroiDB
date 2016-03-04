@@ -1,6 +1,7 @@
 package ca.sbstn.dbtest.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,10 +27,11 @@ import ca.sbstn.dbtest.sql.Table;
 public class TableListAdapter extends BaseAdapter {
     public Context context;
     public List<Table> tables;
-    public List<String> headers;
+    //public List<String> headers;
 
     public Map<String, Boolean> isCollapsed;
-    public Map<String, List<Table>> schemas;
+    public Map<String, List<Table>> headers;
+    public Map<String, List<Table>> finalHeaders;
 
     public boolean showTables;
     public boolean showViews;
@@ -41,17 +43,19 @@ public class TableListAdapter extends BaseAdapter {
     public TableListAdapter(Context context) {
         super();
 
-        this.schemas = new HashMap<>();
+        this.headers = new HashMap<>();
+        this.finalHeaders = new HashMap<>();
         this.isCollapsed = new HashMap<>();
 
         this.context = context;
 
         this.showTables = true;
-        this.showViews = true;
-        this.showIndexes = true;
-        this.showSequences = true;
+        this.showViews = false;
+        this.showIndexes = false;
+        this.showSequences = false;
 
         this.sortType = 1;
+        this.applyFilters();
     }
 
     public void sort() {
@@ -80,20 +84,16 @@ public class TableListAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = LayoutInflater.from(this.context);
 
-        int colorEven = this.context.getResources().getColor(R.color.table_row_even);
-        int colorOdd = this.context.getResources().getColor(R.color.table_row_odd);
-
         if (this.isHeader(position)) {
             String headerKey = this.getHeader(position);
-            List<Table> tablesUnderHeader = this.schemas.get(headerKey);
+            List<Table> tablesUnderHeader = this.finalHeaders.get(headerKey);
 
             LinearLayout header = (LinearLayout) inflater.inflate(R.layout.table_header, null);
-
             ((TextView) header.findViewById(R.id.primary_title)).setText(this.getHeader(position));
 
             if (tablesUnderHeader == null) {
-                ((ImageView) header.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_indeterminate_check_box_white_24dp));
-
+                header.findViewById(R.id.icon).setVisibility(View.GONE);
+                //((ImageView) header.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_indeterminate_check_box_white_24dp));
                 ((TextView) header.findViewById(R.id.secondary_title)).setText("Click to Load");
             } else {
                 if (this.isCollapsed.get(headerKey)) {
@@ -109,59 +109,74 @@ public class TableListAdapter extends BaseAdapter {
         } else {
             Table table = this.getItem(position);
 
-            if (convertView == null || (convertView != null && convertView.findViewById(R.id.tableName) == null)) {
+            if (convertView == null || convertView.findViewById(R.id.tableName) == null) {
                 convertView = inflater.inflate(R.layout.table_item, parent, false);
             }
 
-            if (table.is(Table.Type.TABLE)) {
+            TextView tableType = ((TextView) convertView.findViewById(R.id.table_type));
+            tableType.setText(table.getTypeString());
+
+            /*if (table.is(Table.Type.TABLE)) {
+                tableType.setText(table.getType().);
                 ((ImageView) convertView.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_view_module_white_48dp));
             } else if (table.is(Table.Type.VIEW) || table.is(Table.Type.SYSTEM_VIEW)) {
                 ((ImageView) convertView.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_visibility_white_48dp));
             } else if (table.is(Table.Type.INDEX) || table.is(Table.Type.SYSTEM_INDEX) || table.is(Table.Type.SYSTEM_TOAST_INDEX)) {
                 ((ImageView) convertView.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_info_outline_white_48dp));
             } else if (table.is(Table.Type.SEQUENCE)) {
-                ((ImageView) convertView.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_list_white_48dp));
-            }
+                //((ImageView) convertView.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_view_list_white_48dp));
+            }*/
 
             ((TextView) convertView.findViewById(R.id.tableName)).setText(table.getName());
-            ((TextView) convertView.findViewById(R.id.schema)).setText(table.getSchema());
 
-            if (position % 2 == 0) convertView.setBackgroundColor(colorEven);
-            else convertView.setBackgroundColor(colorOdd);
+            if (position % 2 == 0) convertView.setBackgroundColor(Color.argb((int) Math.floor(0.05 * 255), 255, 255, 255));
+            else convertView.setBackground(null);
 
             return convertView;
         }
     }
 
-    public List<Table> applyFilters() {
-        List<Table> finalList = new ArrayList<>();
+    public void applyFilters() {
+        Log.e("BLAH", "APPLY FIlTER");
+        this.finalHeaders.clear();
 
-        for (Table table : this.tables) {
-            if (table.getType() == Table.Type.INDEX && this.showIndexes) {
-                finalList.add(table);
-            } else if (table.getType() == Table.Type.TABLE && this.showTables) {
-                finalList.add(table);
-            } else if (table.getType() == Table.Type.VIEW && this.showViews) {
-                finalList.add(table);
-            } else if (table.getType() == Table.Type.SEQUENCE && this.showSequences) {
-                finalList.add(table);
+        for (String key : this.headers.keySet()) {
+            List<Table> tables = this.headers.get(key);
+
+            if (tables != null) {
+                List<Table> mTables = new ArrayList<>();
+
+                for (Table table : tables) {
+                    Log.d("type", table.getTypeString());
+                    if (table.getType() == Table.Type.INDEX && this.showIndexes) {
+                        mTables.add(table);
+                    } else if (table.getType() == Table.Type.TABLE && this.showTables) {
+                        mTables.add(table);
+                    } else if (table.getType() == Table.Type.VIEW && this.showViews) {
+                        mTables.add(table);
+                    } else if (table.getType() == Table.Type.SEQUENCE && this.showSequences) {
+                        mTables.add(table);
+                    }
+                }
+
+                this.finalHeaders.put(key, mTables);
+            } else {
+                this.finalHeaders.put(key, null);
             }
         }
-
-        return finalList;
     }
 
     @Override
     public int getCount() {
         int size = 0;
 
-        for (String key : this.schemas.keySet()) {
-            List<Table> tablesInSchema = this.schemas.get(key);
+        for (String key : this.finalHeaders.keySet()) {
+            List<Table> tablesInSchema = this.finalHeaders.get(key);
 
             if (tablesInSchema == null || this.isCollapsed.get(key)) {
                 size = size + 1; // just the header
             } else {
-                size = size + (this.isCollapsed.get(key) ? 1 : (this.schemas.get(key).size()) + 1);
+                size = size + (this.isCollapsed.get(key) ? 1 : (this.finalHeaders.get(key).size()) + 1);
             }
         }
 
@@ -169,8 +184,8 @@ public class TableListAdapter extends BaseAdapter {
     }
 
     public String getHeader(int position) {
-        for (String key : this.schemas.keySet()) {
-            List<Table> mTables = this.schemas.get(key);
+        for (String key : this.finalHeaders.keySet()) {
+            List<Table> mTables = this.finalHeaders.get(key);
 
             if (position == 0) { // header
                 return key;
@@ -191,8 +206,8 @@ public class TableListAdapter extends BaseAdapter {
     }
 
     public boolean isHeader(int position) {
-        for (String key : this.schemas.keySet()) {
-            List<Table> mTables = this.schemas.get(key);
+        for (String key : this.finalHeaders.keySet()) {
+            List<Table> mTables = this.finalHeaders.get(key);
 
             if (position == 0) { // header
                 return true;
@@ -213,7 +228,7 @@ public class TableListAdapter extends BaseAdapter {
     }
 
     public boolean isLoaded(String header) {
-        return (this.schemas.get(header) != null);
+        return (this.finalHeaders.get(header) != null);
     }
 
     public void toggleCollapsed(String header) {
@@ -227,14 +242,15 @@ public class TableListAdapter extends BaseAdapter {
     }
 
     public void setItems(String schema, List<Table> tables) {
-        this.schemas.put(schema, tables);
+        this.headers.put(schema, tables);
         this.setIsCollapsed(schema, false);
+        this.applyFilters();
     }
 
     @Override
     public Table getItem(int position) {
-        for (String key : this.schemas.keySet()) {
-            List<Table> mTables = this.schemas.get(key);
+        for (String key : this.finalHeaders.keySet()) {
+            List<Table> mTables = this.finalHeaders.get(key);
 
             if (position == 0) { // header
                 return null;
@@ -252,7 +268,6 @@ public class TableListAdapter extends BaseAdapter {
         }
 
         return null;
-        //return this.applyFilters().get(position);
     }
 
     @Override
@@ -261,29 +276,50 @@ public class TableListAdapter extends BaseAdapter {
     }
 
     public void setSchemas(List<String> schemas) {
-        this.schemas.clear();
+        this.headers.clear();
         this.isCollapsed.clear();
 
         for (String schema : schemas) {
-            Log.d("blah", schema);
-            this.schemas.put(schema, null);
+            this.headers.put(schema, null);
             this.isCollapsed.put(schema, true);
         }
+
+        this.applyFilters();
     }
 
     public void setShowTables(boolean showTables) {
         this.showTables = showTables;
+        this.applyFilters();
+    }
+
+    public boolean getShowTables() {
+        return this.showTables;
     }
 
     public void setShowViews(boolean showViews) {
         this.showViews = showViews;
+        this.applyFilters();
+    }
+
+    public boolean getShowViews() {
+        return this.showViews;
     }
 
     public void setShowIndexes(boolean showIndexes) {
         this.showIndexes = showIndexes;
+        this.applyFilters();
+    }
+
+    public boolean getShowIndexes() {
+        return this.showIndexes;
     }
 
     public void setShowSequences(boolean showSequences) {
         this.showSequences = showSequences;
+        this.applyFilters();
+    }
+
+    public boolean getShowSequences() {
+        return this.showSequences;
     }
 }

@@ -16,8 +16,9 @@ public class Table implements Serializable {
     public int totalRows;
     public int limit = 30;
     public int offset = 0;
-    public String orderBy = "1";
-    public String orderByDirection = "DESC";
+    //public String orderBy = "1";
+    public int orderBy = 1;
+    public String orderByDirection = "ASC";
     private String name;
     private Table.Type type;
     private Database database;
@@ -118,20 +119,41 @@ public class Table implements Serializable {
         return this.limit;
     }
 
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
     public int getOffset() {
         return this.offset;
     }
 
-    public String getOrderBy() {
+    public void setOrderBy(int orderBy) {
+        this.orderBy = orderBy;
+    }
+
+    public int getOrderBy() {
+        return this.orderBy;
+    }
+
+    public String getOrderByString() {
         if (this.columns != null) {
             try {
-                int column = Integer.parseInt(this.orderBy);
-                return this.columns[column - 1];
-            } catch (NumberFormatException e) {
-            }
+                return this.columns[this.getOrderBy() - 1];
+            } catch (NumberFormatException e) {}
         }
 
-        return this.orderBy;
+        return this.getOrderBy() + "";
+    }
+
+    public void setOrderByDirection(String orderByDirection) {
+        this.orderByDirection = orderByDirection;
+    }
+
+    public void toggleOrderByDirection() {
+        if (this.orderByDirection.toUpperCase().equals("DESC")) this.setOrderByDirection("ASC");
+        else this.setOrderByDirection("DESC");
+
+        this.setOffset(0);
     }
 
     public String getOrderByDirection() {
@@ -238,7 +260,7 @@ public class Table implements Serializable {
     }
 
     public String getQuery() {
-        return String.format("SELECT * FROM %s.%s ORDER BY %s %s OFFSET %d LIMIT %d", this.getSchema(), this.getName(), this.getOrderBy(), this.getOrderByDirection(), this.getOffset(), this.getLimit());
+        return String.format("SELECT * FROM %s.%s ORDER BY %s %s OFFSET %d LIMIT %d", this.getSchema(), this.getName(), this.getOrderByString(), this.getOrderByDirection(), this.getOffset(), this.getLimit());
     }
 
     public enum Type {TABLE, VIEW, INDEX, SEQUENCE, SYSTEM_INDEX, SYSTEM_TABLE, SYSTEM_TOAST_INDEX, SYSTEM_VIEW, UNKNOWN}

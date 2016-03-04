@@ -1,6 +1,5 @@
 package ca.sbstn.dbtest.fragment;
 
-import android.animation.ValueAnimator;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -44,7 +43,6 @@ public class CreateOrEditServerFragment extends Fragment {
     private int selectedColorIndex;
 
     private GridLayout colorChooser;
-    private ValueAnimator actionbarAnimator;
 
     public CreateOrEditServerFragment() {}
 
@@ -186,9 +184,12 @@ public class CreateOrEditServerFragment extends Fragment {
     public boolean saveServer() {
         JSONObject mServer = new JSONObject();
 
-        String id;
+        String id = (this.server == null) ? null : this.server.getId();
 
-        do { id = this.generateId(); } while (((AndroiDB) getActivity()).getServer(id) != null);
+        // TODO: 2015-11-26 MAKE SURE NO COLLISIONS
+        while (id == null) {
+            id = this.generateId();
+        }
 
         String name = ((EditText) this.view.findViewById(R.id.server_name)).getText().toString();
         String host = ((EditText) this.view.findViewById(R.id.server_host)).getText().toString();
@@ -209,13 +210,13 @@ public class CreateOrEditServerFragment extends Fragment {
 
         try {
             mServer.put("id", id)
-                    .put("name", name)
-                    .put("host", host)
-                    .put("port", port)
-                    .put("db", defaultDatabase)
-                    .put("user", user)
-                    .put("password", password)
-                    .put("color", color);
+                .put("name", name)
+                .put("host", host)
+                .put("port", port)
+                .put("db", defaultDatabase)
+                .put("user", user)
+                .put("password", password)
+                .put("color", color);
         } catch (JSONException e) {
             Log.d("EDITSERVER", e.getMessage());
             return false;
@@ -233,7 +234,7 @@ public class CreateOrEditServerFragment extends Fragment {
             this.server.setColor(color);
         }
 
-        String prefsKeyForId = this.getPrefsKeyForId(this.server.getId());
+        String prefsKeyForId = this.getPrefsKeyForId(id);
 
         SharedPreferences sharedPreferences = ((AndroiDB) getActivity()).getSharedPreferences();
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -267,19 +268,12 @@ public class CreateOrEditServerFragment extends Fragment {
         final String user = ((EditText) this.view.findViewById(R.id.server_username)).getText().toString();
         final String password = ((EditText) this.view.findViewById(R.id.server_password)).getText().toString();
 
-        //final ProgressBar loadingBar = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
-        //loadingBar.setIndeterminate(true);
-
-        //this.view.addView(loadingBar);
-
         AsyncTask<String, Void, Boolean> testConnectionTask = new AsyncTask<String, Void, Boolean>() {
             private Exception exception;
 
             @Override
             protected Boolean doInBackground(String... params) {
                 try {
-                    Class.forName("org.postgresql.Driver").newInstance();
-
                     String url = String.format("jdbc:postgresql://%s:%s/%s", host, mPort, defaultDatabase.equals("") ? "postgres" : defaultDatabase);
                     Connection connection = DriverManager.getConnection(url, user, password);
                     connection.close();

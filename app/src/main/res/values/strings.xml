@@ -31,6 +31,12 @@
     <string name="action_new">New</string>
     <string name="action_done">Done</string>
     <string name="action_delete">Delete</string>
+    <string name="action_drop_database">Drop Database</string>
+    <string name="action_drop_table">Drop Table</string>
+
+    <string name="dialog_title_drop_table">Drop Table</string>
+    <string name="dialog_desc_drop_table">Enter "DROP TABLE" below to continue</string>
+    <string name="dialog_edit_text_hint_drop_table">DROP TABLE</string>
 
     <string name="columns_title">Columns</string>
     <string name="fkeys_title">Foreign Keys</string>
@@ -39,8 +45,9 @@
 
     <string name="no_databases_message">Use the overflow menu to add a database</string>
 
-    <string name="query_field_hint">query...</string>
+    <string name="query_field_hint">query&#8230;</string>
     <string name="query_runner_run">execute</string>
+    <string name="query_runner_result_title">Query Status</string>
 
     <string name="prompt_name">Name</string>
     <string name="prompt_host">Hostname</string>
@@ -63,10 +70,12 @@
     <string name="server_username">Username</string>
     <string name="server_password">Password</string>
 
-
     <string name="hint_name">Database Name</string>
     <string name="hint_owner">Database Owner</string>
     <string name="hint_comment">Database Comment</string>
 
     <string name="loading_databases">Loading databases&#8230;</string>
+
+    <string name="data_view_next">next</string>
+    <string name="data_view_previous">previous</string>
 </resources>

@@ -17,28 +17,28 @@
     <item android:title="@string/action_show">
         <menu>
             <item
-                android:id="@+id/show_tables"
+                android:id="@+id/action_show_tables"
                 android:title="@string/action_show_tables"
                 android:checkable="true"
                 android:checked="true"
                 android:orderInCategory="100"
                 app:showAsAction="never" />
             <item
-                android:id="@+id/show_indexes"
+                android:id="@+id/action_show_indexes"
                 android:title="@string/action_show_indexes"
                 android:checkable="true"
                 android:checked="true"
                 android:orderInCategory="100"
                 app:showAsAction="never" />
             <item
-                android:id="@+id/show_views"
+                android:id="@+id/action_show_views"
                 android:title="@string/action_show_views"
                 android:checkable="true"
                 android:checked="true"
                 android:orderInCategory="100"
                 app:showAsAction="never" />
             <item
-                android:id="@+id/show_sequences"
+                android:id="@+id/action_show_sequences"
                 android:title="@string/action_show_sequences"
                 android:checkable="true"
                 android:checked="true"

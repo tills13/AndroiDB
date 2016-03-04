@@ -192,7 +192,7 @@ public class CreateOrEditDatabaseFragment extends Fragment {
 
         menu.clear();
 
-        inflater.inflate(R.menu.menu_edit_database, menu);
+        inflater.inflate(R.menu.menu_create_edit_database, menu);
     }
 
     @Override

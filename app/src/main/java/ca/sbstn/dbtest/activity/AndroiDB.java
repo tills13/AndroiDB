@@ -26,7 +26,6 @@ import ca.sbstn.dbtest.R;
 import ca.sbstn.dbtest.callback.SQLExecuteCallback;
 import ca.sbstn.dbtest.fragment.DatabaseListFragment;
 import ca.sbstn.dbtest.fragment.ServerListFragment;
-import ca.sbstn.dbtest.fragment.SplashScreenFragment;
 import ca.sbstn.dbtest.fragment.TableListFragment;
 import ca.sbstn.dbtest.fragment.ViewDataFragment;
 import ca.sbstn.dbtest.sql.Database;
@@ -74,7 +73,9 @@ public class AndroiDB extends AppCompatActivity implements
         }
 
         this.fragmentManager = this.getSupportFragmentManager();
-        this.fragmentManager.beginTransaction()
+        ServerListFragment serverListFragment = ServerListFragment.newInstance();
+        putContextFragment(serverListFragment, false);
+        /*this.fragmentManager.beginTransaction()
                 .add(R.id.context_fragment, SplashScreenFragment.newInstance())
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                 .commit();
@@ -85,11 +86,9 @@ public class AndroiDB extends AppCompatActivity implements
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                ServerListFragment serverListFragment = ServerListFragment.newInstance();
 
-                putContextFragment(serverListFragment, false);
             }
-        }, 500);
+        }, 500);*/
     }
 
     @Override
@@ -204,7 +203,7 @@ public class AndroiDB extends AppCompatActivity implements
 
     public void putContextFragment(Fragment fragment, boolean addToBackStack, int animIn, int animOut) {
         FragmentTransaction fragmentTransaction = this.fragmentManager.beginTransaction();
-        fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+        //fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
         fragmentTransaction.replace(R.id.context_fragment, fragment);
 
         if (addToBackStack) {
@@ -253,7 +252,7 @@ public class AndroiDB extends AppCompatActivity implements
             String serverJsonString = this.getSharedPreferences().getString(SHARED_PREFS_SERVER_PREFIX + id, "");
             JSONObject serverJson = new JSONObject(serverJsonString);
 
-            Server server = new Server(
+            return new Server(
                     serverJson.getString("id"),
                     serverJson.getString("name"),
                     serverJson.getString("host"),
@@ -263,8 +262,6 @@ public class AndroiDB extends AppCompatActivity implements
                     serverJson.getString("db"),
                     serverJson.getString("color")
             );
-
-            return server;
         } catch (JSONException e) {
             return null;
         }
@@ -306,6 +303,8 @@ public class AndroiDB extends AppCompatActivity implements
 
     @Override
     public void onTableSelected(final Table table) {
+        //TableListFragment tableListFragment = TableListFragment.newInstance(database);
+
         ExecuteQueryWithCallbackTask executeQueryWithCallbackTask = new ExecuteQueryWithCallbackTask(this, table, new SQLExecuteCallback() {
             @Override
             public void onResult(List<SQLDataSet> results) {}

@@ -76,11 +76,11 @@ public class FetchDatabasesTask extends AsyncTask<Server, Void, List<Database>> 
     protected void onPostExecute(List<Database> databases) {
         super.onPostExecute(databases);
 
+        this.mAdapter.setDatabases(databases);
+        this.mAdapter.notifyDataSetChanged();
+
         if (this.sqlExecuteCallback != null) {
             this.sqlExecuteCallback.onSingleResult(null);
         }
-
-        this.mAdapter.setDatabases(databases);
-        this.mAdapter.notifyDataSetChanged();
     }
 }

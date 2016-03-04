@@ -1,49 +1,76 @@
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ca.sbstn.dbtest.activity.QueryRunnerActivity">
+    android:orientation="vertical"
+    android:weightSum="1">
+    <EditText
+        android:id="@+id/query_field"
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        android:textColor="@color/grey_600"
+        android:inputType="textMultiLine|textNoSuggestions"
+        android:padding="@dimen/query_field_padding"
+        android:gravity="top"
+        android:layout_weight="1"/>
+
+    <RelativeLayout
+        android:id="@+id/query_runner_actions"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/query_runner_actions_padding"
+        android:gravity="center_vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/query_runner_previous"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:background="@drawable/ic_keyboard_arrow_left_black_48dp"/>
+            <Button
+                android:id="@+id/query_runner_next"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:background="@drawable/ic_keyboard_arrow_right_black_48dp"/>
+        </LinearLayout>
+        <Button
+            android:id="@+id/query_runner_run"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:text="@string/query_runner_run"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
+
     <LinearLayout
+        android:id="@+id/query_status_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-        <EditText
-            android:id="@+id/query_field"
-            android:layout_width="fill_parent"
-            android:layout_height="200dp"
-            android:background="@color/white"
-            android:textColor="@color/grey_600"
-            android:inputType="textMultiLine|textNoSuggestions"
-            android:padding="@dimen/query_field_padding"
-            android:gravity="top" />
-        <RelativeLayout
+        android:layout_height="wrap_content"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingBottom="16dp"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:animateLayoutChanges="true">
+        <ProgressBar
+            android:id="@+id/loading_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:indeterminate="true"
+            style="?android:progressBarStyleHorizontal"/>
+        <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:padding="@dimen/query_runner_actions_padding"
-            android:gravity="center_vertical">
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <Button
-                    android:id="@+id/query_runner_previous"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
-                    android:background="@drawable/ic_keyboard_arrow_left_white_48dp"/>
-                <Button
-                    android:id="@+id/query_runner_next"
-                    android:layout_width="45dp"
-                    android:layout_height="45dp"
-                    android:background="@drawable/ic_keyboard_arrow_right_white_48dp"/>
-            </LinearLayout>
-            <Button
-                android:id="@+id/query_runner_run"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:text="@string/query_runner_run"
-                android:layout_alignParentEnd="true"/>
-        </RelativeLayout>
+            android:theme="@style/AndroiDB.Title"
+            android:text="@string/query_runner_result_title"/>
+        <TextView
+            android:id="@+id/query_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"/>
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

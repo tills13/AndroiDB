@@ -19,29 +19,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activity.ViewDataActivity"
-            android:label="@string/title_activity_table"
-            android:parentActivityName=".activity.DatabaseActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activity.DatabaseActivity" />
-        </activity>
-        <activity
-            android:name=".activity.QueryRunnerActivity"
-            android:label="@string/title_activity_query_runner" >
-        </activity>
-        <activity
-            android:name=".activity.RowInspectorActivity"
-            android:label="@string/title_activity_row_inspector" >
-        </activity>
-        <activity
-            android:name=".activity.TableActivity"
-            android:label="@string/title_activity_table" >
-        </activity>
-        <activity
-            android:name=".activity.EditTableActivity"
-            android:label="@string/title_activity_edit_table" >
-        </activity>
     </application>
 </manifest>

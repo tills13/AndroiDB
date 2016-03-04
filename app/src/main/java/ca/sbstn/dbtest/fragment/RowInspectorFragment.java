@@ -131,6 +131,7 @@ public class RowInspectorFragment extends Fragment {
             fetchTableKeysTask.execute(table);
         } else {
             this.showPrimaryKeys();
+            this.showForeignKeys();
             this.buildColumns(this.row);
         }
     }
@@ -139,41 +140,43 @@ public class RowInspectorFragment extends Fragment {
         Table table = this.row.getDataSet().getTable();
         List<Key> primaryKeys = table.getPrimaryKeys();
 
-        String query = String.format("SELECT * FROM \"%s\".\"%s\" a WHERE ", table.getSchema(), table.getName());
+        if (primaryKeys.size() == 0) {
+            this.buildColumns(this.row);
+        } else {
+            String query = String.format("SELECT * FROM \"%s\".\"%s\" a WHERE ", table.getSchema(), table.getName());
 
-        for (int i = 0; i < table.getPrimaryKeys().size(); i++) {
-            Key key = primaryKeys.get(i);
+            for (int i = 0; i < table.getPrimaryKeys().size(); i++) {
+                Key key = primaryKeys.get(i);
 
-            String keyValue = row.getString(key.getColumn());
-            query = query + SQLUtils.format(String.format("a.\"%s\" = $1", key.getColumn()), keyValue);
+                String keyValue = row.getString(key.getColumn());
+                query = query + SQLUtils.format(String.format("a.\"%s\" = $1", key.getColumn()), keyValue);
 
-            if (i != (primaryKeys.size() - 1)) {
-                query = query + " AND ";
+                if (i != (primaryKeys.size() - 1)) {
+                    query = query + " AND ";
+                }
             }
+
+            ProgressBar loadingBar = new ProgressBar(getContext(), null, android.R.attr.progressBarStyleHorizontal);
+            loadingBar.setIndeterminate(true);
+
+            this.columnsContainer.addView(loadingBar);
+
+            ExecuteQueryWithCallbackTask queryTask = new ExecuteQueryWithCallbackTask(getContext(), table.getDatabase(), new SQLExecuteCallback() {
+                @Override
+                public void onResult(List<SQLDataSet> results) {}
+
+                @Override
+                public void onSingleResult(SQLDataSet sqlResult) {
+                    buildColumns(sqlResult.getRow(0));
+
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            });
+
+            queryTask.setExpectResult(true);
+            queryTask.setProgressBar(loadingBar);
+            queryTask.execute(query);
         }
-
-        // generate callback to build data after row is fetched
-        SQLExecuteCallback callback = new SQLExecuteCallback() {
-            @Override
-            public void onResult(List<SQLDataSet> results) {}
-
-            @Override
-            public void onSingleResult(SQLDataSet sqlResult) {
-                buildColumns(sqlResult.getRow(0));
-
-                swipeRefreshLayout.setRefreshing(false);
-            }
-        };
-
-        ProgressBar loadingBar = new ProgressBar(getContext(), null, android.R.attr.progressBarStyleHorizontal);
-        loadingBar.setIndeterminate(true);
-
-        this.columnsContainer.addView(loadingBar);
-
-        ExecuteQueryWithCallbackTask queryTask = new ExecuteQueryWithCallbackTask(getContext(), table.getDatabase(), callback);
-        queryTask.setExpectResult(true);
-        queryTask.setProgressBar(loadingBar);
-        queryTask.execute(query);
     }
 
     public void buildColumns(SQLDataSet.Row row) {
@@ -205,10 +208,11 @@ public class RowInspectorFragment extends Fragment {
             TextView notice = new TextView(getContext());
             notice.setText(table == null ? "No primary keys" : "No primary keys for table");
             notice.setPadding(padding, 0, padding, padding);
+            notice.setTextColor(getResources().getColor(R.color.grey_400));
             this.pkeysContainer.addView(notice);
-        }
 
-        if (table == null) return;
+            return;
+        }
 
         int mIndex = 0;
         for (Key primaryKey : table.getPrimaryKeys()) {
@@ -224,16 +228,17 @@ public class RowInspectorFragment extends Fragment {
     }
 
     public void showForeignKeys() {
-        LayoutInflater inflater = LayoutInflater.from(getContext());
-
         Table table = this.row.getDataSet().getTable();
 
-        if (table.getForeignKeys().size() == 0) {
+        if (table == null || table.getForeignKeys().size() == 0) {
             int padding = (int) getResources().getDimension(R.dimen.container_padding);
             TextView notice = new TextView(getContext());
             notice.setText("No foreign keys for table");
             notice.setPadding(padding, 0, padding, padding);
+            notice.setTextColor(getResources().getColor(R.color.grey_400));//getColor(R.color.grey_400, getResources().newTheme()));
             fkeysContainer.addView(notice);
+
+            return;
         }
 
         for (Key foreignKey : table.getForeignKeys()) {
@@ -249,6 +254,7 @@ public class RowInspectorFragment extends Fragment {
             TextView label = new TextView(getContext());
             label.setText(name);
             label.setPadding(padding, padding, padding, padding);
+            label.setTextColor(getResources().getColor(R.color.grey_400));
             fkeysContainer.addView(label);
 
             ProgressBar loadingBar = new ProgressBar(getContext(), null, android.R.attr.progressBarStyleHorizontal);

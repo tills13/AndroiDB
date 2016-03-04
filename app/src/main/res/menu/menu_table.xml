@@ -8,4 +8,10 @@
         android:icon="@android:drawable/ic_menu_edit"
         android:orderInCategory="100"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_drop_table"
+        android:title="@string/action_drop_table"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:orderInCategory="100"
+        app:showAsAction="ifRoom" />
 </menu>

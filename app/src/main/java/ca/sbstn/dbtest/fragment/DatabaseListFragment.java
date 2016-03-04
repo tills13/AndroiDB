@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,6 +43,8 @@ public class DatabaseListFragment extends Fragment {
     private DatabaseListAdapter adapter;
     private LinearLayout connectionInfo;
 
+    //private FetchDatabasesTask fetchDatabasesTask;
+
     private OnDatabaseSelectedListener mListener;
 
     public DatabaseListFragment() {}
@@ -63,6 +66,7 @@ public class DatabaseListFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        Log.d("asdasd", "onCreate");
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
@@ -70,17 +74,19 @@ public class DatabaseListFragment extends Fragment {
         if (getArguments() != null) {
             this.server = (Server) getArguments().getSerializable(SERVER_PARAM);
             this.adapter = new DatabaseListAdapter(getActivity());
+            //this.fetchDatabasesTask = new FetchDatabasesTask(getActivity(), this.adapter);
 
-            this.refresh();
+            this.refresh(true);
         }
     }
 
     @Override
     public void onResume() {
+        Log.d("asdasd", "onResume");
         super.onResume();
 
         //((LinearLayout) ((TextView) this.internalView.findViewById(R.id.server_name)).getParent()).setBackgroundColor(Color.parseColor(this.server.getColor()));
-        this.refresh();
+        //this.refresh(false);
     }
 
     @Override
@@ -100,6 +106,7 @@ public class DatabaseListFragment extends Fragment {
                 CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(this.server);
 
                 ((AndroiDB) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
+                break;
             }
         }
 
@@ -157,18 +164,22 @@ public class DatabaseListFragment extends Fragment {
         this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refresh();
+                refresh(false);
             }
         });
 
         return this.internalView;
     }
 
-    public void refresh() {
+    public void refresh(final boolean openDefault) {
+        //Log.d("asdasd", "refresh");
+
+        //if (this.fetchDatabasesTask != null) return;
+
         this.server = ((AndroiDB) getActivity()).getServer(this.server.getId());
 
         if (this.server == null) {
-            ((AndroiDB) getActivity()).getSupportFragmentManager().popBackStack();
+            getActivity().getSupportFragmentManager().popBackStack();
             return;
         }
 
@@ -183,6 +194,15 @@ public class DatabaseListFragment extends Fragment {
             @Override
             public void onSingleResult(SQLDataSet result) {
                 swipeRefreshLayout.setRefreshing(false);
+
+                Log.d("asdasdasdasd", server.getDefaultDatabase() + openDefault);
+                if (server.getDefaultDatabase() != "" && openDefault) {
+                    Database database = (Database) adapter.getByName(server.getDefaultDatabase());
+
+                    if (database != null) {
+                    //    mListener.onDatabaseSelected(database);
+                    }
+                }
             }
         });
 
