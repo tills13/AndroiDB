@@ -38,6 +38,7 @@ public class Server implements Serializable {
     private List<Database> databases; // list of all databases
 
     public Server(String id, String name, String host, int port, String username, String password, String defaultDatabase, String color) {
+        this.id = id;
         this.name = name;
         this.host = host;
         this.port = port;
@@ -110,5 +111,18 @@ public class Server implements Serializable {
 
     public void setColor(String color) {
         this.color = color;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s %d %s %s %s",
+            this.getId(),
+            this.getName(),
+            this.getHost(),
+            this.getPort(),
+            this.getUsername(),
+            this.getPassword(),
+            this.getColor()
+        );
     }
 }
