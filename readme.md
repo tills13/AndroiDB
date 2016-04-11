@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tills13/AndroiDB.svg?branch=master)](https://travis-ci.org/tills13/AndroiDB)
+
 ## AndroiDB 
 
 A Postgres app for DBAs on the go.
