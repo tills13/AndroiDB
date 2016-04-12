@@ -46,7 +46,7 @@
                 android:layout_height="match_parent"
                 android:overScrollMode="ifContentScrolls"
                 tools:context=".MainActivity">
-                <ca.sbstn.dbtest.view.SQLTableLayout
+                <ca.sbstn.androidb.view.SQLTableLayout
                     android:id="@+id/table"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent" />
