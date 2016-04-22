@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sbstn.androidb.R;
+import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.SQLDataSet;
@@ -199,9 +201,17 @@ public class CreateOrEditDatabaseFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
 
+        Log.d("asdasdasd", "ere " + itemId + " " + android.R.id.home);
+
         switch (itemId) {
+            case android.R.id.home: {
+                this.finish();
+                return true;
+            }
+
             case R.id.action_save: {
                 this.saveDatabase();
+                break;
             }
         }
 

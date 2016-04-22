@@ -85,6 +85,10 @@ public class Server implements Serializable {
         return this.color;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public void setName(String name) {
         this.name = name;
     }

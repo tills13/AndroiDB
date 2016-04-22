@@ -1,6 +1,7 @@
 package ca.sbstn.androidb.fragment;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -8,6 +9,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,7 +32,8 @@ import java.util.Arrays;
 import java.util.Random;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.activity.AndroiDB;
+import ca.sbstn.androidb.activity.BaseActivity;
+import ca.sbstn.androidb.application.AndroiDB;
 import ca.sbstn.androidb.sql.Server;
 
 /**
@@ -41,6 +45,8 @@ public class CreateOrEditServerFragment extends Fragment {
     private Server server;
     private View view;
     private int selectedColorIndex;
+
+    protected SharedPreferences sharedPreferences;
 
     private GridLayout colorChooser;
 
@@ -61,6 +67,7 @@ public class CreateOrEditServerFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
+        this.sharedPreferences = getActivity().getSharedPreferences(AndroiDB.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
 
         if (this.getArguments() != null) {
             this.server = (Server) this.getArguments().getSerializable(PARAM_SERVER);
@@ -93,6 +100,24 @@ public class CreateOrEditServerFragment extends Fragment {
             this.selectedColorIndex = 0;
         }
 
+        ((EditText) this.view.findViewById(R.id.server_name)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String text = editable.toString();
+                ((BaseActivity) getActivity()).setToolbarTitle(text);
+            }
+        });
+
         ((Button) this.view.findViewById(R.id.save)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,7 +139,7 @@ public class CreateOrEditServerFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ((AndroiDB) getActivity()).setToolbarTitle(this.server == null ? "New Server" : this.server.getName());
+        ((BaseActivity) getActivity()).setToolbarTitle(this.server == null ? "New Server" : this.server.getName());
 
         this.refreshColorChooser();
     }
@@ -136,6 +161,14 @@ public class CreateOrEditServerFragment extends Fragment {
                 break;
             }
 
+            case R.id.action_clone: {
+                if (this.server == null) return true;
+
+                this.server.setId(this.generateId());
+                this.saveServer();
+                break;
+            }
+
             case R.id.action_done: {
                 if (this.saveServer()) {
                     getActivity().getSupportFragmentManager().popBackStack();
@@ -153,7 +186,7 @@ public class CreateOrEditServerFragment extends Fragment {
         this.colorChooser.removeAllViews();
 
         int mColor = Color.parseColor(Server.colors[this.selectedColorIndex]);
-        ((AndroiDB) getActivity()).setToolbarColor(mColor, true, true);
+        ((BaseActivity) getActivity()).setToolbarColor(mColor, true, true);
 
         LayoutInflater inflater = LayoutInflater.from(getActivity());
 
@@ -236,8 +269,8 @@ public class CreateOrEditServerFragment extends Fragment {
 
         String prefsKeyForId = this.getPrefsKeyForId(id);
 
-        SharedPreferences sharedPreferences = ((AndroiDB) getActivity()).getSharedPreferences();
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        SharedPreferences.Editor editor = this.sharedPreferences.edit();
         editor.putString(prefsKeyForId, mServer.toString()).commit();
 
         return true;
@@ -249,9 +282,7 @@ public class CreateOrEditServerFragment extends Fragment {
             .setPositiveButton("yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    ((AndroiDB) getActivity()).getSharedPreferences()
-                            .edit().remove(getPrefsKeyForId(server.getId())).commit();
-
+                    sharedPreferences.edit().remove(getPrefsKeyForId(server.getId())).commit();
                     getActivity().getSupportFragmentManager().popBackStack();
                     getActivity().getSupportFragmentManager().findFragmentById(R.id.context_fragment).onResume();
                 }
@@ -290,7 +321,6 @@ public class CreateOrEditServerFragment extends Fragment {
                 super.onPostExecute(result);
 
                 String message = result ? "Successfully connected" : "Connection failed: " + this.exception.getMessage();
-
 
                 (new AlertDialog.Builder(getActivity())).setTitle(result ? "Success" : "Failed").setMessage(message).setPositiveButton("ok", null).show();
             }

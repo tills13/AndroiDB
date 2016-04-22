@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,6 +24,8 @@ import java.util.List;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.AndroiDB;
+import ca.sbstn.androidb.activity.BaseActivity;
+import ca.sbstn.androidb.activity.ServerActivity;
 import ca.sbstn.androidb.adapter.DatabaseListAdapter;
 import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.Database;
@@ -66,7 +69,6 @@ public class DatabaseListFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        Log.d("asdasd", "onCreate");
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
@@ -74,19 +76,14 @@ public class DatabaseListFragment extends Fragment {
         if (getArguments() != null) {
             this.server = (Server) getArguments().getSerializable(SERVER_PARAM);
             this.adapter = new DatabaseListAdapter(getActivity());
-            //this.fetchDatabasesTask = new FetchDatabasesTask(getActivity(), this.adapter);
-
-            this.refresh(true);
         }
     }
 
     @Override
     public void onResume() {
-        Log.d("asdasd", "onResume");
         super.onResume();
 
-        //((LinearLayout) ((TextView) this.internalView.findViewById(R.id.server_name)).getParent()).setBackgroundColor(Color.parseColor(this.server.getColor()));
-        //this.refresh(false);
+        this.refresh(false);
     }
 
     @Override
@@ -104,8 +101,7 @@ public class DatabaseListFragment extends Fragment {
         switch (itemId) {
             case R.id.action_edit: {
                 CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(this.server);
-
-                ((AndroiDB) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
+                ((ServerActivity) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
                 break;
             }
         }
@@ -167,24 +163,22 @@ public class DatabaseListFragment extends Fragment {
                 refresh(false);
             }
         });
+        this.refresh(false);
 
         return this.internalView;
     }
 
     public void refresh(final boolean openDefault) {
-        //Log.d("asdasd", "refresh");
-
-        //if (this.fetchDatabasesTask != null) return;
-
-        this.server = ((AndroiDB) getActivity()).getServer(this.server.getId());
+        this.server = ((ServerActivity) getActivity()).getServer(); // reload the server from prefs
+        this.swipeRefreshLayout.setRefreshing(true);
 
         if (this.server == null) {
             getActivity().getSupportFragmentManager().popBackStack();
             return;
         }
 
-        ((AndroiDB) getActivity()).setToolbarColor(this.server.getColor(), true, true);
-        ((AndroiDB) getActivity()).setToolbarTitle(this.server.getName());
+        ((BaseActivity) getActivity()).setToolbarTitle(this.server.getName());
+        ((BaseActivity) getActivity()).setToolbarColor(Color.parseColor(this.server.getColor()));
 
         FetchDatabasesTask fetchDatabasesTask = new FetchDatabasesTask(this.getActivity(), this.adapter);
         fetchDatabasesTask.setCallback(new SQLExecuteCallback() {
@@ -195,7 +189,13 @@ public class DatabaseListFragment extends Fragment {
             public void onSingleResult(SQLDataSet result) {
                 swipeRefreshLayout.setRefreshing(false);
 
-                Log.d("asdasdasdasd", server.getDefaultDatabase() + openDefault);
+                //if (result.getError() != null) {
+                    /*new AlertDialog.Builder(getContext())
+                            .setTitle("Warning")
+                            .setMessage(result.getError().getMessage())
+                            .create().show();*/
+                //}
+
                 if (server.getDefaultDatabase() != "" && openDefault) {
                     Database database = (Database) adapter.getByName(server.getDefaultDatabase());
 

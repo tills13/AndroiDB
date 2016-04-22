@@ -54,9 +54,9 @@ public class AndroiDB extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!this.attemptInstantiateJDBCDrivers()) {
-            finish();
-        }
+        //if (!this.attemptInstantiateJDBCDrivers()) {
+        //    finish();
+        //}
 
         setContentView(R.layout.layout_main);
 
@@ -267,15 +267,7 @@ public class AndroiDB extends AppCompatActivity implements
         }
     }
 
-    private boolean attemptInstantiateJDBCDrivers() {
-        try {
-            Class.forName("org.postgresql.Driver").newInstance();
-        } catch (ClassNotFoundException|InstantiationException|IllegalAccessException e) {
-            return false;
-        }
 
-        return true;
-    }
 
     @Override
     public void onServerSelected(Server server) {
