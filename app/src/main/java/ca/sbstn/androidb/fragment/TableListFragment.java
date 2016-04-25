@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.activity.AndroiDB;
+import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.adapter.TableListAdapter;
-import ca.sbstn.androidb.callback.SQLExecuteCallback;
+import ca.sbstn.androidb.callback.Callback;
+import ca.sbstn.androidb.entity.Schema;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.sql.Table;
 import ca.sbstn.androidb.task.FetchSchemasTask;
 import ca.sbstn.androidb.task.FetchTablesTask;
@@ -70,14 +70,6 @@ public class TableListFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        ((AndroiDB) getActivity()).setToolbarTitle(this.database.getName());
-        ((AndroiDB) getActivity()).setToolbarSubtitle(this.database.getServer().getName());
-    }
-
-    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
 
@@ -108,13 +100,13 @@ public class TableListFragment extends Fragment {
             case (R.id.action_edit): {
                 CreateOrEditDatabaseFragment fragment = CreateOrEditDatabaseFragment.newInstance(this.database);
 
-                ((AndroiDB) getActivity()).putDetailsFragment(fragment, true);
+                ((BaseActivity) getActivity()).putDetailsFragment(fragment, true);
                 break;
             }
 
             case R.id.action_query_runner: {
                 QueryRunnerFragment queryRunnerFragment = QueryRunnerFragment.newInstance(this.database);
-                ((AndroiDB) getActivity()).putDetailsFragment(queryRunnerFragment, true);
+                ((BaseActivity) getActivity()).putDetailsFragment(queryRunnerFragment, true);
 
                 break;
             }
@@ -170,7 +162,6 @@ public class TableListFragment extends Fragment {
                 final EditText editText = ((EditText) view.findViewById(R.id.edit_text));
                 editText.setHint(getResources().getString(R.string.dialog_edit_text_hint_drop_table));
 
-
                 new AlertDialog.Builder(getContext())
                         .setTitle(getResources().getString(R.string.dialog_title_drop_table))
                         .setView(view)
@@ -203,15 +194,23 @@ public class TableListFragment extends Fragment {
         this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TableListAdapter adapter = (TableListAdapter) adapterView.getAdapter();
+                final TableListAdapter adapter = (TableListAdapter) adapterView.getAdapter();
 
                 if (adapter.isHeader(i)) {
-                    String schema = adapter.getHeader(i);
+                    final String schema = adapter.getHeader(i);
+
                     if (adapter.isLoaded(schema)) {
                         adapter.toggleCollapsed(schema);
                         adapter.notifyDataSetChanged();
                     } else {
-                        FetchTablesTask fetchTablesTask = new FetchTablesTask(getActivity(), adapter).forSchema(schema);
+                        FetchTablesTask fetchTablesTask = new FetchTablesTask(getContext(), new Callback<List<Table>>() {
+                            @Override
+                            public void onResult(List<Table> result) {
+                                adapter.setItems(schema, result);
+                                adapter.notifyDataSetChanged();
+                            }
+                        }).forSchema(schema);
+
                         fetchTablesTask.execute(database);
                     }
                 } else {
@@ -232,7 +231,7 @@ public class TableListFragment extends Fragment {
                 if (adapter != null) {
                     String header = adapter.getHeader(firstVisibleItem);
 
-                    ((AndroiDB) getActivity()).setToolbarSubtitle(firstVisibleItem > 0 ? header : "");
+                    ((BaseActivity) getActivity()).setToolbarSubtitle(firstVisibleItem > 0 ? header : "");
                 }
             }
         });
@@ -240,38 +239,26 @@ public class TableListFragment extends Fragment {
         this.swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_container);
         this.swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onRefresh() {
-                refresh();
-            }
+            public void onRefresh() { refresh(); }
         });
 
         return view;
     }
 
     public void refresh() {
-        FetchSchemasTask fetchSchemasTask = new FetchSchemasTask(new SQLExecuteCallback() {
+        if (this.swipeRefreshLayout != null) this.swipeRefreshLayout.setRefreshing(true);
+
+        new FetchSchemasTask(getContext(), new Callback<List<Schema>>() {
             @Override
-            public void onResult(List<SQLDataSet> results) {}
-
-            @Override
-            public void onSingleResult(SQLDataSet sqlResult) {
-                List<String> schemas = new ArrayList<>();
-
-                for (SQLDataSet.Row row : sqlResult) {
-                    schemas.add(row.getString("name"));
-                }
-
-                adapter.setSchemas(schemas);
+            public void onResult(List<Schema> result) {
+                adapter.setSchemas(result);
                 adapter.notifyDataSetChanged();
-
                 swipeRefreshLayout.setRefreshing(false);
             }
-        });
-
-        fetchSchemasTask.execute(this.database);
+        }).execute(this.database);
     }
 
     public interface OnTableSelectedListener {
-        public void onTableSelected(Table table);
+        void onTableSelected(Table table);
     }
 }

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import ca.sbstn.androidb.R;
+import ca.sbstn.androidb.entity.Schema;
 import ca.sbstn.androidb.sql.Table;
 
 /**
@@ -27,7 +28,6 @@ import ca.sbstn.androidb.sql.Table;
 public class TableListAdapter extends BaseAdapter {
     public Context context;
     public List<Table> tables;
-    //public List<String> headers;
 
     public Map<String, Boolean> isCollapsed;
     public Map<String, List<Table>> headers;
@@ -275,13 +275,13 @@ public class TableListAdapter extends BaseAdapter {
         return 0;
     }
 
-    public void setSchemas(List<String> schemas) {
+    public void setSchemas(List<Schema> schemas) {
         this.headers.clear();
         this.isCollapsed.clear();
 
-        for (String schema : schemas) {
-            this.headers.put(schema, null);
-            this.isCollapsed.put(schema, true);
+        for (Schema schema : schemas) {
+            this.headers.put(schema.getName(), null);
+            this.isCollapsed.put(schema.getName(), true);
         }
 
         this.applyFilters();

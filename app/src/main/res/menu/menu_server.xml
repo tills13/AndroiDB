@@ -1,8 +1,16 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools" tools:context="ca.sbstn.androidb.activity.ServerActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="ca.sbstn.androidb.activity.ServerActivity">
+    <item
+        android:id="@+id/action_new"
+        android:icon="@drawable/ic_add_white_48dp"
+        android:title="New"
+        app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_edit"
-        android:icon="@android:drawable/ic_menu_edit"
-        android:title="Edit"/>
+        android:icon="@drawable/ic_mode_edit_white_48dp"
+        android:title="Edit"
+        app:showAsAction="ifRoom"/>
 </menu>

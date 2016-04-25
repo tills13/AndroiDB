@@ -17,13 +17,14 @@ import android.widget.TextView;
 import java.util.List;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.activity.AndroiDB;
+import ca.sbstn.androidb.activity.BaseActivity;
+import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.Key;
 import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.sql.SQLUtils;
 import ca.sbstn.androidb.sql.Table;
-import ca.sbstn.androidb.task.ExecuteQueryWithCallbackTask;
+import ca.sbstn.androidb.task.ExecuteQueryTask;
 import ca.sbstn.androidb.task.FetchTableKeysTask;
 import ca.sbstn.androidb.view.SQLTableLayout;
 
@@ -31,7 +32,7 @@ import ca.sbstn.androidb.view.SQLTableLayout;
  * Created by tills13 on 2015-11-24.
  */
 public class RowInspectorFragment extends Fragment {
-    public static final String PARAM_ROW = "row";
+    public static final String PARAM_ROW = "ROW";
 
     private SQLDataSet.Row row;
     private LinearLayout columnsContainer;
@@ -73,10 +74,10 @@ public class RowInspectorFragment extends Fragment {
             Table table = this.row.getDataSet().getTable();
 
             if (table != null) {
-                ((AndroiDB) getActivity()).setToolbarTitle(table.getName());
-                ((AndroiDB) getActivity()).setToolbarSubtitle("");
+                ((BaseActivity) getActivity()).setToolbarTitle(table.getName());
+                ((BaseActivity) getActivity()).setToolbarSubtitle("");
             } else {
-                ((AndroiDB) getActivity()).setToolbarTitle("Row Inspector");
+                ((BaseActivity) getActivity()).setToolbarTitle("Row Inspector");
             }
         } else {
             // warn
@@ -157,25 +158,19 @@ public class RowInspectorFragment extends Fragment {
             }
 
             ProgressBar loadingBar = new ProgressBar(getContext(), null, android.R.attr.progressBarStyleHorizontal);
-            loadingBar.setIndeterminate(true);
-
             this.columnsContainer.addView(loadingBar);
 
-            ExecuteQueryWithCallbackTask queryTask = new ExecuteQueryWithCallbackTask(getContext(), table.getDatabase(), new SQLExecuteCallback() {
+            ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                 @Override
-                public void onResult(List<SQLDataSet> results) {}
-
-                @Override
-                public void onSingleResult(SQLDataSet sqlResult) {
-                    buildColumns(sqlResult.getRow(0));
-
+                public void onResult(SQLDataSet result) {
+                    buildColumns(result.getRow(0));
                     swipeRefreshLayout.setRefreshing(false);
                 }
             });
 
-            queryTask.setExpectResult(true);
-            queryTask.setProgressBar(loadingBar);
-            queryTask.execute(query);
+            executeQueryTask.setExpectResults(true);
+            executeQueryTask.setProgressBar(loadingBar);
+            executeQueryTask.execute(query);
         }
     }
 
@@ -265,26 +260,20 @@ public class RowInspectorFragment extends Fragment {
             fkeysContainer.addView(loadingBar);
             fkeysContainer.addView(tableLayout);
 
-            //int mIndex = this.row.getDataSet().getColumnIndex(fkeyColumnName);
-
             String query = getResources().getString(R.string.db_query_fetch_all_fkey2);
             query = String.format(query, refTable, refColumnName, this.row.getString(fkeyColumnName));
 
-            ExecuteQueryWithCallbackTask executeQueryWithCallbackTask = new ExecuteQueryWithCallbackTask(getContext(), table.getDatabase(), new SQLExecuteCallback() {
-                @Override
-                public void onResult(List<SQLDataSet> results) {
-                    Log.d("here", "here");
-                }
 
+            ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                 @Override
-                public void onSingleResult(SQLDataSet result) {
+                public void onResult(SQLDataSet result) {
                     tableLayout.setData(result);
                 }
             });
 
-            executeQueryWithCallbackTask.setExpectResult(true);
-            executeQueryWithCallbackTask.setProgressBar(loadingBar);
-            executeQueryWithCallbackTask.execute(query);
+            executeQueryTask.setExpectResults(true);
+            executeQueryTask.setProgressBar(loadingBar);
+            executeQueryTask.execute(query);
         }
     }
 }

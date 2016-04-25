@@ -4,5 +4,6 @@
         <attr name="textColor" format="color"/>
         <attr name="cellPadding" format="dimension"/>
         <attr name="stickyHeader" format="boolean"/>
+        <attr name="stickyHeaderColor" format="color"/>
     </declare-styleable>
 </resources>

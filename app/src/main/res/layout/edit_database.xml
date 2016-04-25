@@ -30,7 +30,7 @@
         android:fontFamily="sans-serif-medium"
         android:text="@string/database_title_owner" />
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/database_owner"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"

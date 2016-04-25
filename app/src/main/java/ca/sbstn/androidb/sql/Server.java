@@ -37,6 +37,10 @@ public class Server implements Serializable {
     private String defaultDatabase;
     private List<Database> databases; // list of all databases
 
+    public Server() {
+
+    }
+
     public Server(String id, String name, String host, int port, String username, String password, String defaultDatabase, String color) {
         this.id = id;
         this.name = name;

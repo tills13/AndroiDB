@@ -7,7 +7,7 @@ import android.app.Application;
  */
 public class AndroiDB extends Application {
     public static final String SHARED_PREFS_KEY = "AndroiDB_Prefs";
-    public static final String SHARED_PREFS_SERVER_PREFIX = "AndroiDB_Server_";
+    public static final String PREFERENCES_KEY_SERVERS = "AndroiDB_Servers";
 
     public AndroiDB() {
         super();

@@ -40,8 +40,6 @@ public class SQLTableLayout extends LinearLayout {
     private TableLayout dataView;
     private TableLayout headerView;
 
-    //private TableRow stickyHeader;
-
     private OnRowClickListener mRowClickListener;
     private OnHeaderClickListener mHeaderClickListener;
 
@@ -50,6 +48,7 @@ public class SQLTableLayout extends LinearLayout {
     private int textColor;
     private float cellPadding;
     private boolean stickyHeader;
+    private int stickyHeaderColor;
 
     public SQLTableLayout(Context context) {
         this(context, null);
@@ -77,6 +76,7 @@ public class SQLTableLayout extends LinearLayout {
             this.textColor = array.getColor(R.styleable.SQLTableLayout_textColor, Color.parseColor("#ffffff"));
             this.stickyHeader = array.getBoolean(R.styleable.SQLTableLayout_stickyHeader, false);
             this.cellPadding = array.getDimension(R.styleable.SQLTableLayout_cellPadding, Utils.dpToPixels(getContext().getResources(), 16));
+            this.stickyHeaderColor = array.getColor(R.styleable.SQLTableLayout_stickyHeaderColor, Color.argb((int) Math.floor(0.50 * 255), 0, 0, 0));
         } finally {
             array.recycle();
         }
@@ -116,6 +116,14 @@ public class SQLTableLayout extends LinearLayout {
     public void setData(SQLDataSet data) {
         this.data = data;
         this.invalidate();
+    }
+
+    public void setStickyHeaderColor(String color) {
+        this.setStickyHeaderColor(Color.parseColor(color));
+    }
+
+    public void setStickyHeaderColor(int stickyHeaderColor) {
+        this.stickyHeaderColor = stickyHeaderColor;
     }
 
     public SQLDataSet getData() {
@@ -158,7 +166,7 @@ public class SQLTableLayout extends LinearLayout {
                 mHeaderRow.addView(cell);
             }
 
-            this.headerView.setBackgroundColor(Color.argb((int) Math.floor(0.50 * 255), 0, 0, 0));
+            this.headerView.setBackgroundColor(this.stickyHeaderColor);
             this.headerView.addView(mHeaderRow);
             this.needInvalidateStickyHeader = false;
         }
@@ -201,15 +209,6 @@ public class SQLTableLayout extends LinearLayout {
         for (int j = 0; j < this.data.getRowCount(); j++) {
             final SQLDataSet.Row row = this.data.getRow(j);
             TableRow tableRow = new TableRow(this.getContext());
-            /*TextView cell = new TextView(this.getContext());
-            cell.setTextColor(this.textColor);
-            cell.setPadding((int) this.cellPadding, (int) this.cellPadding, (int) this.cellPadding, (int) this.cellPadding);
-
-            cell.setText("ROW " + j);
-            tableRow.addView(cell);*/
-        //}
-        //for (final SQLDataSet.Row row : this.data) {
-        //    TableRow tableRow = new TableRow(getContext());
 
             for (int i = 0; i < this.data.getColumnCount(); i++) {
                 TextView cell = new TextView(this.getContext());
@@ -231,7 +230,6 @@ public class SQLTableLayout extends LinearLayout {
             });
 
             if (j % 2 == 0) {
-                //tableRow.setBackgroundColor(Colours.darken(getResources().getColor(R.color.colorPrimary)));
                 tableRow.setBackgroundColor(Color.argb((int) Math.floor(0.05 * 255), 255, 255, 255));
             }
 

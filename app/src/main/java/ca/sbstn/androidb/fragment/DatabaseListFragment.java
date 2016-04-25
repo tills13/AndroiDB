@@ -2,6 +2,7 @@ package ca.sbstn.androidb.fragment;
 
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,10 +24,10 @@ import android.widget.TextView;
 import java.util.List;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.activity.AndroiDB;
 import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.activity.ServerActivity;
 import ca.sbstn.androidb.adapter.DatabaseListAdapter;
+import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.SQLDataSet;
@@ -82,8 +83,7 @@ public class DatabaseListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
-        this.refresh(false);
+        //this.refresh(false);
     }
 
     @Override
@@ -145,6 +145,14 @@ public class DatabaseListFragment extends Fragment {
             }
         });
 
+        this.listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                mListener.onDatabaseLongPressed((Database) adapter.getItem(i));
+                return true;
+            }
+        });
+
         this.listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
@@ -170,7 +178,6 @@ public class DatabaseListFragment extends Fragment {
 
     public void refresh(final boolean openDefault) {
         this.server = ((ServerActivity) getActivity()).getServer(); // reload the server from prefs
-        this.swipeRefreshLayout.setRefreshing(true);
 
         if (this.server == null) {
             getActivity().getSupportFragmentManager().popBackStack();
@@ -180,28 +187,24 @@ public class DatabaseListFragment extends Fragment {
         ((BaseActivity) getActivity()).setToolbarTitle(this.server.getName());
         ((BaseActivity) getActivity()).setToolbarColor(Color.parseColor(this.server.getColor()));
 
-        FetchDatabasesTask fetchDatabasesTask = new FetchDatabasesTask(this.getActivity(), this.adapter);
-        fetchDatabasesTask.setCallback(new SQLExecuteCallback() {
+        FetchDatabasesTask fetchDatabasesTask = new FetchDatabasesTask(this.getContext(), new Callback<List<Database>>() {
             @Override
-            public void onResult(List<SQLDataSet> results) {}
-
-            @Override
-            public void onSingleResult(SQLDataSet result) {
-                swipeRefreshLayout.setRefreshing(false);
-
-                //if (result.getError() != null) {
-                    /*new AlertDialog.Builder(getContext())
-                            .setTitle("Warning")
-                            .setMessage(result.getError().getMessage())
-                            .create().show();*/
-                //}
-
-                if (server.getDefaultDatabase() != "" && openDefault) {
-                    Database database = (Database) adapter.getByName(server.getDefaultDatabase());
-
-                    if (database != null) {
-                    //    mListener.onDatabaseSelected(database);
-                    }
+            public void onResult(List<Database> result) {
+                if (this.getTask().hasException()) {
+                    Exception e = this.getTask().getException();
+                    new AlertDialog.Builder(getContext())
+                            .setTitle("Whoops, something went wrong")
+                            .setMessage(e.getMessage())
+                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                @Override
+                                public void onDismiss(DialogInterface dialogInterface) {
+                                    getActivity().finish();
+                                }
+                            }).create().show();
+                } else {
+                    adapter.setDatabases(result);
+                    adapter.notifyDataSetChanged();
+                    swipeRefreshLayout.setRefreshing(false);
                 }
             }
         });
@@ -210,6 +213,7 @@ public class DatabaseListFragment extends Fragment {
     }
 
     public interface OnDatabaseSelectedListener {
-        public void onDatabaseSelected(Database database);
+        void onDatabaseSelected(Database database);
+        void onDatabaseLongPressed(Database database);
     }
 }

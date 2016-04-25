@@ -1,5 +1,6 @@
 package ca.sbstn.androidb.fragment;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -18,17 +19,15 @@ import java.util.List;
 import java.util.Set;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.activity.AndroiDB;
-import ca.sbstn.androidb.callback.SQLExecuteCallback;
+import ca.sbstn.androidb.activity.BaseActivity;
+import ca.sbstn.androidb.activity.ViewDataActivity;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.sql.SQLDataSet;
-import ca.sbstn.androidb.task.ExecuteQueryWithCallbackTask;
 
 /**
  * Created by tills13 on 2015-11-26.
  */
 public class QueryRunnerFragment extends Fragment {
-    public static final String PARAM_DATABASE = "database";
+    public static final String PARAM_DATABASE = "DATABASE";
     public static final String SHARED_PREFS_QUERY_HISTORY_KEY = "AndroiDB_Query_History";
 
     private Database database;
@@ -80,8 +79,6 @@ public class QueryRunnerFragment extends Fragment {
         super.onResume();
 
         this.readHistory();
-
-        ((AndroiDB) getActivity()).setToolbarTitle(this.database.getName());
     }
 
     @Override
@@ -131,53 +128,27 @@ public class QueryRunnerFragment extends Fragment {
         this.historyAdapter.addItem(query);
         ((View) statusField.getParent()).setVisibility(View.GONE);
 
-        ExecuteQueryWithCallbackTask executeQueryWithCallbackTask = new ExecuteQueryWithCallbackTask(getActivity(), this.database, new SQLExecuteCallback() {
-            @Override
-            public void onResult(List<SQLDataSet> results) {}
-
-            @Override
-            public void onSingleResult(SQLDataSet result) {
-                loadingBar.setVisibility(View.GONE);
-
-                if (result.getError() != null) {
-                    statusField.setText(result.getError().getMessage());
-                    ((View) statusField.getParent()).setVisibility(View.VISIBLE);
-                } else {
-                    // do you like pain and suffering?
-                    if (result.getRowCount() * result.getColumnCount() > 1000) {
-
-                    } else {
-
-                    }
-
-                    ViewDataFragment viewDataFragment = ViewDataFragment.newInstance(result);
-                    ((AndroiDB) getActivity()).putDetailsFragment(viewDataFragment, true);
-                }
-            }
-        });
-
-        executeQueryWithCallbackTask.setExpectResult(true);
-        executeQueryWithCallbackTask.execute(query);
+        Intent intent = new Intent(getContext(), ViewDataActivity.class);
+        intent.putExtra(ViewDataActivity.QUERY_PARAM, query);
+        intent.putExtra(ViewDataActivity.DATABASE_PARAM, this.database);
+        startActivity(intent);
     }
 
     public void readHistory() {
-        SharedPreferences sharedPreferences = ((AndroiDB) getActivity()).getSharedPreferences();
+        SharedPreferences sharedPreferences = ((BaseActivity) getActivity()).getSharedPreferences();
         Set<String> mSet = sharedPreferences.getStringSet(SHARED_PREFS_QUERY_HISTORY_KEY, new HashSet<String>());
 
         this.historyAdapter.setItems(new ArrayList<>(mSet));
     }
 
     public void writeHistory(boolean immediate) {
-        SharedPreferences sharedPreferences = ((AndroiDB) getActivity()).getSharedPreferences();
+        SharedPreferences sharedPreferences = ((BaseActivity) getActivity()).getSharedPreferences();
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
         editor.putStringSet(SHARED_PREFS_QUERY_HISTORY_KEY, new HashSet<>(this.historyAdapter.getHistory()));
 
-        if (immediate) {
-            editor.commit();
-        } else {
-            editor.apply();
-        }
+        if (immediate) editor.commit();
+        else editor.apply();
     }
 
     private interface OnHistoryButtonClickListener {

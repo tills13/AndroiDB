@@ -2,123 +2,88 @@ package ca.sbstn.androidb.task;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.SQLDataSet;
+import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.sql.Table;
 import ca.sbstn.androidb.view.SQLTableLayout;
 
 /**
  * Created by tills13 on 2015-07-12.
  */
-public class ExecuteQueryTask extends AsyncTask<String, Void, List<SQLDataSet>> {
+public class ExecuteQueryTask extends BaseTask<String, Void, SQLDataSet> {
     private static final String TAG = "EXECUTEQUERYTASK";
 
-    private Context context;
-    private Database database;
-    private Table table;
+    protected Database database;
+    protected Table table;
+    protected boolean expectResults;
 
-    private SQLTableLayout tableLayout;
 
-    private SQLExecuteCallback callback;
-    private ProgressBar progressBar;
 
-    public ExecuteQueryTask(Context context, Database database, SQLTableLayout tableLayout) {
-        this.context = context;
+    public ExecuteQueryTask(Database database, Context context, Callback<SQLDataSet> callback) {
+        super(context, callback);
+
         this.database = database;
-        this.tableLayout = tableLayout;
+        this.expectResults = true;
     }
 
-    public ExecuteQueryTask(Context context, Database database, Table table, SQLTableLayout tableLayout) {
-        this.context = context;
-        this.database = database;
+    public ExecuteQueryTask(Database database, Table table, Context context, Callback<SQLDataSet> callback) {
+        this(database, context, callback);
+
         this.table = table;
-        this.tableLayout = tableLayout;
     }
 
-    public void setCallback(SQLExecuteCallback callback) {
-        this.callback = callback;
+    public void setExpectResults(boolean expectResults) {
+        this.expectResults = expectResults;
     }
 
-    public void setProgressBar(ProgressBar progressBar) {
-        this.progressBar = progressBar;
+    public boolean isExpectResults() {
+        return expectResults;
     }
 
     @Override
-    protected List<SQLDataSet> doInBackground(String ... queries) {
-        List<SQLDataSet> results = new ArrayList<>();
+    protected SQLDataSet doInBackground(String ... queries) {
+        String query = queries[0];
 
-        /*Server server = this.database.getServer();
-        String url = String.format("jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), this.database.getName());
+        Server server = this.database.getServer();
+        String url = String.format(Locale.getDefault(), "jdbc:postgresql://%s:%d/%s", server.getHost(), server.getPort(), this.database.getName());
+
+        SQLDataSet sqlDataSet = new SQLDataSet();
+        sqlDataSet.setQuery(query);
 
         try {
-            for (String query : queries) {
-                Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
-                Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                ResultSet results = statement.executeQuery(query);
+            Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
+            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 
+            if (this.isExpectResults()) {
+                ResultSet resultSet = statement.executeQuery(query);
+                sqlDataSet = SQLDataSet.from(resultSet);
 
-            }
-
-
-            if (this.table == null) {
-                this.table = new Table(this.database);
-            }
-
-            this.table.setData(results);
-            SQLResult result = SQLResult.from(results);
-
-
-            boolean shouldFetchAbsoluteRowCount = context.getSharedPreferences("settings", Context.MODE_PRIVATE).getBoolean("fetch_absolute_row_count", true);
-
-            if (shouldFetchAbsoluteRowCount) {
-                ResultSet rowCount = statement.executeQuery(String.format(
-                        "SELECT COUNT(1) AS count FROM \"%s\".\"%s\";",
-                        table.getSchema(), table.getName()
-                ));
-
-                if (rowCount.next()) {
-                    table.setTotalRows(rowCount.getInt("count"));
+                if (this.table != null) {
+                    sqlDataSet.setTable(this.table);
                 }
+            } else {
+                statement.executeUpdate(query);
             }
-
-            connection.close();
-            return result;
         } catch (Exception e) {
-            Log.w(TAG, e.getMessage());
-            return null;
-        }*/
-
-        return results;
-    }
-
-    @Override
-    protected void onPostExecute(List<SQLDataSet> sqlDataSet) {
-        super.onPostExecute(sqlDataSet);
-
-        if (this.progressBar != null) {
-            ViewGroup parent = ((ViewGroup) this.progressBar.getParent());
-            if (parent != null) parent.removeView(this.progressBar);
+            Log.d(ExecuteQueryTask.TAG, e.getMessage());
+            this.setException(e);
         }
 
-        if (this.callback != null) {
-            if (sqlDataSet.size() == 1) callback.onSingleResult(sqlDataSet.get(0));
-            else callback.onResult(sqlDataSet);
-        }
-    }
-
-    @Override
-    protected void onPreExecute() {
-        if (this.progressBar != null) {
-            if (!this.progressBar.isIndeterminate()) {
-                this.progressBar.setIndeterminate(true);
-            }
-        }
+        return sqlDataSet;
     }
 }

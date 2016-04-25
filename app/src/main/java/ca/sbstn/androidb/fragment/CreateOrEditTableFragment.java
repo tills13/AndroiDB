@@ -14,14 +14,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.activity.AndroiDB;
+import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.sql.Table;
 
 /**
  * Created by tills13 on 2015-11-23.
  */
 public class CreateOrEditTableFragment extends Fragment {
-    public static final String PARAM_TABLE = "table";
+    public static final String PARAM_TABLE = "TABLE";
 
     private Table table;
     private View view;
@@ -85,7 +85,7 @@ public class CreateOrEditTableFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ((AndroiDB) getActivity()).setToolbarTitle(this.table == null ? "New Table" : this.table.getName());
+        ((BaseActivity) getActivity()).setToolbarTitle(this.table == null ? "New Table" : this.table.getName());
     }
 
     @Override

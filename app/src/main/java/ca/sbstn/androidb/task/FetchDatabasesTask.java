@@ -2,17 +2,21 @@ package ca.sbstn.androidb.task;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.telecom.Call;
 import android.util.Log;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.adapter.DatabaseListAdapter;
+import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.Server;
@@ -20,20 +24,15 @@ import ca.sbstn.androidb.sql.Server;
 /**
  * Created by tills13 on 15-06-26.
  */
-public class FetchDatabasesTask extends AsyncTask<Server, Void, List<Database>> {
+public class FetchDatabasesTask extends BaseTask<Server, Void, List<Database>> {
     public static String TAG = "FETCHDATABASESTASK";
 
-    private Context context;
-    private SQLExecuteCallback sqlExecuteCallback;
-    private DatabaseListAdapter mAdapter;
-
-    public FetchDatabasesTask(Context context, DatabaseListAdapter adapter) {
-        this.context = context;
-        this.mAdapter = adapter;
+    public FetchDatabasesTask(Context context) {
+        super(context);
     }
 
-    public void setCallback(SQLExecuteCallback sqlExecuteCallback) {
-        this.sqlExecuteCallback = sqlExecuteCallback;
+    public FetchDatabasesTask(Context context, Callback callback) {
+        super(context, callback);
     }
 
     @Override
@@ -42,12 +41,10 @@ public class FetchDatabasesTask extends AsyncTask<Server, Void, List<Database>> 
         List<Database> databases = new ArrayList<>();
 
         try {
-            Class.forName("org.postgresql.Driver").newInstance();
-
-            String url = String.format("jdbc:postgresql://%s:%d/%s",
-                    server.getHost(),
-                    server.getPort(),
-                    server.getDefaultDatabase()
+            String url = String.format(Locale.getDefault(), "jdbc:postgresql://%s:%d/%s",
+                server.getHost(),
+                server.getPort(),
+                server.getDefaultDatabase()
             );
 
             String query = this.context.getResources().getString(R.string.db_query_fetch_databases);
@@ -57,30 +54,14 @@ public class FetchDatabasesTask extends AsyncTask<Server, Void, List<Database>> 
             ResultSet results = stmt.executeQuery();
 
             while (results.next()) {
-                Database database = Database.from(results, server);
+                Database database = new Database(server, results.getString("name"), results.getString("owner"), results.getString("comment"));
                 databases.add(database);
             }
         } catch (Exception e) {
             Log.d(FetchDatabasesTask.TAG, e.getMessage());
+            this.setException(e);
         }
 
         return databases;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
-    @Override
-    protected void onPostExecute(List<Database> databases) {
-        super.onPostExecute(databases);
-
-        this.mAdapter.setDatabases(databases);
-        this.mAdapter.notifyDataSetChanged();
-
-        if (this.sqlExecuteCallback != null) {
-            this.sqlExecuteCallback.onSingleResult(null);
-        }
     }
 }

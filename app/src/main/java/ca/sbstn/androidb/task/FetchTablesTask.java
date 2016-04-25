@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sbstn.androidb.adapter.TableListAdapter;
+import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.sql.Table;
@@ -18,24 +19,26 @@ import ca.sbstn.androidb.sql.Table;
 /**
  * Created by tills13 on 15-06-26.
  */
-public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
+public class FetchTablesTask extends BaseTask<Database, Void, List<Table>> {
     public static String TAG = "FETCHTABLESTASK";
 
-    public Context context;
-    private Database database;
-    private TableListAdapter adapter;
+    private final String [] simplifiedTableTypes = {"TABLE", "VIEW", "SYSTEM TABLE", "INDEX", "SEQUENCE"};
+    private final String [] allTableTypes = {"TABLE", "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY", "LOCAL TEMPORARY", "ALIAS", "SYNONYM", "INDEX", "SEQUENCE"};
 
-    private String schema;
+    protected String schema;
+    protected boolean showAll = false;
 
-    public FetchTablesTask(Context context, TableListAdapter adapter) {
-        this.context = context;
-        this.adapter = adapter;
+    public FetchTablesTask(Context context, Callback<List<Table>> callback) {
+        super(context, callback);
     }
 
     public FetchTablesTask forSchema(String schema) {
         this.schema = schema;
-
         return this;
+    }
+
+    public void setShowAll(boolean showAll) {
+        this.showAll = showAll;
     }
 
     @Override
@@ -49,7 +52,7 @@ public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
 
         try {
             Connection connection = DriverManager.getConnection(url, server.getUsername(), server.getPassword());
-            ResultSet results = connection.getMetaData().getTables(null, this.schema, null, null);
+            ResultSet results = connection.getMetaData().getTables(null, this.schema, null, (this.showAll ? this.allTableTypes : this.simplifiedTableTypes));
 
             while (results.next()) {
                 Table table = Table.from(results, database);
@@ -60,18 +63,5 @@ public class FetchTablesTask extends AsyncTask<Database, Void, List<Table>> {
         }
 
         return tables;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-    }
-
-    @Override
-    protected void onPostExecute(List<Table> results) {
-        super.onPostExecute(results);
-
-        this.adapter.setItems(this.schema, results);
-        this.adapter.notifyDataSetChanged();
     }
 }

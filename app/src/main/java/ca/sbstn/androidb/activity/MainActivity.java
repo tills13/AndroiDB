@@ -17,11 +17,8 @@ import ca.sbstn.androidb.sql.Server;
 
 public class MainActivity extends BaseActivity implements ServerListFragment.OnServerSelectedListener {
     protected void onCreate(Bundle savedInstanceState) {
+        setContentView(R.layout.layout_main);
     	super.onCreate(savedInstanceState);
-    	setContentView(R.layout.layout_main);
-
-        this.toolbar = (Toolbar) this.findViewById(R.id.toolbar);
-        this.setSupportActionBar(this.toolbar);
 
         ActionBar actionBar = this.getSupportActionBar();
 

@@ -32,16 +32,84 @@ public class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        this.toolbar = (Toolbar) this.findViewById(R.id.toolbar);
+        this.setSupportActionBar(this.toolbar);
+
         this.fragmentManager = this.getSupportFragmentManager();
         this.sharedPreferences = this.getSharedPreferences(AndroiDB.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
     }
 
+    public SharedPreferences getSharedPreferences() {
+        return this.sharedPreferences;
+    }
+
+    public void putContextFragment(Fragment fragment, boolean addToBackStack) {
+        this.putContextFragment(fragment, addToBackStack, R.anim.slide_in, R.anim.slide_out);
+    }
+
+    public void putContextFragment(Fragment fragment, boolean addToBackStack, int animIn, int animOut) {
+        FragmentTransaction fragmentTransaction = this.fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.context_fragment, fragment);
+
+        if (addToBackStack) {
+            fragmentTransaction.addToBackStack(null);
+        }
+
+        fragmentTransaction.setCustomAnimations(animIn, animOut);
+        fragmentTransaction.commit();
+    }
+
+    public void putDetailsFragment(Fragment fragment, boolean replaceContext) {
+        if (this.findViewById(R.id.details_fragment) == null) {
+            this.putContextFragment(fragment, true);
+        } else {
+            Fragment currentDetails = this.fragmentManager.findFragmentById(R.id.details_fragment);
+
+            if (replaceContext) {
+                if (currentDetails != null) {
+                    this.fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    this.fragmentManager.beginTransaction()
+                            .remove(currentDetails)
+                            .commit();
+
+                    this.fragmentManager.executePendingTransactions();
+
+                    this.fragmentManager.beginTransaction()
+                            .add(R.id.context_fragment, currentDetails)
+                            //.addToBackStack(null)
+                            .commit();
+                }
+            }
+
+            this.fragmentManager.beginTransaction()
+                    .replace(R.id.details_fragment, fragment)
+                    //.addToBackStack(null)
+                    .commit();
+        }
+    }
+
     public void setToolbarTitle(String title) {
-        this.toolbar.setTitle(title);
+        if (this.getSupportActionBar() != null) {
+           this.getSupportActionBar().setTitle(title);
+        } else this.toolbar.setTitle(title);
+    }
+
+    public void setToolbarSubtitle(String subtitle) {
+        if (this.getSupportActionBar() != null) {
+            this.getSupportActionBar().setSubtitle(subtitle);
+        } else this.toolbar.setSubtitle(subtitle);
     }
 
     public void setToolbarColor(String color, boolean animate, boolean setStatusBar) {
         this.setToolbarColor(Color.parseColor(color), animate, setStatusBar);
+    }
+
+    public void setToolbarColor(String color, boolean setStatusBar) {
+        this.setToolbarColor(color, false, setStatusBar);
+    }
+
+    public void setToolbarColor(String color) {
+        this.setToolbarColor(Color.parseColor(color));
     }
 
     public void setToolbarColor(int color) {
@@ -87,51 +155,10 @@ public class BaseActivity extends AppCompatActivity {
             this.actionbarAnimator.start();
         } else {
             this.toolbar.setBackgroundColor(color);
-        }
-    }
 
-    public void putContextFragment(Fragment fragment, boolean addToBackStack) {
-        this.putContextFragment(fragment, addToBackStack, R.anim.slide_in, R.anim.slide_out);
-    }
-
-    public void putContextFragment(Fragment fragment, boolean addToBackStack, int animIn, int animOut) {
-        FragmentTransaction fragmentTransaction = this.fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.context_fragment, fragment);
-
-        if (addToBackStack) {
-            fragmentTransaction.addToBackStack(null);
-        }
-
-        fragmentTransaction.setCustomAnimations(animIn, animOut);
-        fragmentTransaction.commit();
-    }
-
-    public void putDetailsFragment(Fragment fragment, boolean replaceContext) {
-        if (this.findViewById(R.id.details_fragment) == null) {
-            this.putContextFragment(fragment, true);
-        } else {
-            Fragment currentDetails = this.fragmentManager.findFragmentById(R.id.details_fragment);
-
-            if (replaceContext) {
-                if (currentDetails != null) {
-                    this.fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    this.fragmentManager.beginTransaction()
-                            .remove(currentDetails)
-                            .commit();
-
-                    this.fragmentManager.executePendingTransactions();
-
-                    this.fragmentManager.beginTransaction()
-                            .add(R.id.context_fragment, currentDetails)
-                            //.addToBackStack(null)
-                            .commit();
-                }
+            if (setStatusBar) {
+                getWindow().setStatusBarColor(Colours.darken(color));
             }
-
-            this.fragmentManager.beginTransaction()
-                    .replace(R.id.details_fragment, fragment)
-                    //.addToBackStack(null)
-                    .commit();
         }
     }
 }

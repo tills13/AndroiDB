@@ -17,14 +17,20 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import ca.sbstn.androidb.R;
+import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.activity.MainActivity;
 import ca.sbstn.androidb.application.AndroiDB;
 import ca.sbstn.androidb.adapter.ServerListAdapter;
@@ -139,35 +145,13 @@ public class ServerListFragment extends Fragment {
         return true;
     }
 
-    public List<Server> loadServers() {
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(AndroiDB.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
-        Map<String, ?> preferences = sharedPreferences.getAll();
-        List<Server> servers = new ArrayList<>();
+    public Map<String, Server> loadServers() {
+        Gson gson = new Gson();
+        SharedPreferences sharedPreferences = ((BaseActivity) getActivity()).getSharedPreferences();
+        String serverJson = sharedPreferences.getString(AndroiDB.PREFERENCES_KEY_SERVERS, "{}");
 
-        try {
-            for (String key : preferences.keySet()) {
-                if (key.startsWith(AndroiDB.SHARED_PREFS_SERVER_PREFIX)) {
-                    Object something = preferences.get(key);
-                    JSONObject mServer = new JSONObject(something.toString());
-                    Server server = new Server(
-                            mServer.getString("id"),
-                            mServer.getString("name"),
-                            mServer.getString("host"),
-                            mServer.getInt("port"),
-                            mServer.getString("user"),
-                            mServer.getString("password"),
-                            mServer.getString("db"),
-                            mServer.getString("color")
-                    );
-
-                    servers.add(server);
-                }
-            }
-        } catch (JSONException e) {
-            Log.d("AS", e.getMessage());
-        }
-
-        return servers;
+        Type serverListType = new TypeToken<Map<String, Server>>(){}.getType();
+        return gson.fromJson(serverJson, serverListType);
     }
 
     public interface OnServerSelectedListener {

@@ -14,11 +14,12 @@ import android.widget.Button;
 import java.util.List;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.activity.AndroiDB;
+import ca.sbstn.androidb.activity.BaseActivity;
+import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.sql.Table;
-import ca.sbstn.androidb.task.ExecuteQueryWithCallbackTask;
+import ca.sbstn.androidb.task.ExecuteQueryTask;
 import ca.sbstn.androidb.view.SQLTableLayout;
 
 /**
@@ -73,7 +74,7 @@ public class ViewDataFragment extends Fragment {
         switch (itemId) {
             case R.id.action_edit: {
                 CreateOrEditTableFragment createOrEditTableFragment = CreateOrEditTableFragment.newInstance(this.sqlDataSet.getTable());
-                ((AndroiDB) getActivity()).putDetailsFragment(createOrEditTableFragment, true);
+                ((BaseActivity) getActivity()).putDetailsFragment(createOrEditTableFragment, true);
 
                 break;
             }
@@ -88,12 +89,17 @@ public class ViewDataFragment extends Fragment {
         View view = inflater.inflate(R.layout.data_view, null);
 
         this.sqlTableLayout = (SQLTableLayout) view.findViewById(R.id.sql_table_layout);
+
+        if (this.sqlDataSet.getTable() != null) {
+            this.sqlTableLayout.setStickyHeaderColor(this.sqlDataSet.getTable().getDatabase().getServer().getColor());
+        }
+
         this.sqlTableLayout.setData(sqlDataSet);
         this.sqlTableLayout.setOnRowSelectedListener(new SQLTableLayout.OnRowClickListener() {
             @Override
             public void onRowClicked(SQLDataSet.Row row) {
                 RowInspectorFragment fragment = RowInspectorFragment.newInstance(row);
-                ((AndroiDB) getActivity()).putDetailsFragment(fragment, true);
+                ((BaseActivity) getActivity()).putDetailsFragment(fragment, true);
             }
         });
 
@@ -105,18 +111,15 @@ public class ViewDataFragment extends Fragment {
                 if (table.getOrderBy() == index) table.toggleOrderByDirection();
                 else table.setOrderBy(index);
 
-                ExecuteQueryWithCallbackTask executeQueryWithCallbackTask = new ExecuteQueryWithCallbackTask(getContext(), table, new SQLExecuteCallback() {
+                ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                     @Override
-                    public void onResult(List<SQLDataSet> results) {}
-
-                    @Override
-                    public void onSingleResult(SQLDataSet result) {
+                    public void onResult(SQLDataSet result) {
                         sqlTableLayout.setData(result);
                     }
                 });
 
-                executeQueryWithCallbackTask.setExpectResult(true);
-                executeQueryWithCallbackTask.execute(table.getQuery());
+                executeQueryTask.setExpectResults(true);
+                executeQueryTask.execute(table.getQuery());
             }
         });
 
@@ -130,18 +133,15 @@ public class ViewDataFragment extends Fragment {
                     Table table = sqlDataSet.getTable();
                     table.next();
 
-                    ExecuteQueryWithCallbackTask executeQueryWithCallbackTask = new ExecuteQueryWithCallbackTask(getContext(), table, new SQLExecuteCallback() {
+                    ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                         @Override
-                        public void onResult(List<SQLDataSet> results) {}
-
-                        @Override
-                        public void onSingleResult(SQLDataSet result) {
+                        public void onResult(SQLDataSet result) {
                             sqlTableLayout.setData(result);
                         }
                     });
 
-                    executeQueryWithCallbackTask.setExpectResult(true);
-                    executeQueryWithCallbackTask.execute(table.getQuery());
+                    executeQueryTask.setExpectResults(true);
+                    executeQueryTask.execute(table.getQuery());
                 }
             });
 
@@ -151,18 +151,15 @@ public class ViewDataFragment extends Fragment {
                     Table table = sqlDataSet.getTable();
                     table.previous();
 
-                    ExecuteQueryWithCallbackTask executeQueryWithCallbackTask = new ExecuteQueryWithCallbackTask(getContext(), table, new SQLExecuteCallback() {
+                    ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                         @Override
-                        public void onResult(List<SQLDataSet> results) {}
-
-                        @Override
-                        public void onSingleResult(SQLDataSet result) {
+                        public void onResult(SQLDataSet result) {
                             sqlTableLayout.setData(result);
                         }
                     });
 
-                    executeQueryWithCallbackTask.setExpectResult(true);
-                    executeQueryWithCallbackTask.execute(table.getQuery());
+                    executeQueryTask.setExpectResults(true);
+                    executeQueryTask.execute(table.getQuery());
                 }
             });
         } else {

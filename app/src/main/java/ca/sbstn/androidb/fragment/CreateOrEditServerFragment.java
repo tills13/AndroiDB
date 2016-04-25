@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -21,34 +22,48 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Random;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.application.AndroiDB;
 import ca.sbstn.androidb.sql.Server;
+import ca.sbstn.androidb.util.Utils;
 
 /**
  * Created by tills13 on 2015-11-23.
  */
 public class CreateOrEditServerFragment extends Fragment {
-    public static final String PARAM_SERVER = "server";
+    public static final String PARAM_SERVER = "SERVER";
 
     private Server server;
     private View view;
     private int selectedColorIndex;
 
-    protected SharedPreferences sharedPreferences;
+    protected GridLayout colorChooser;
+    protected EditText nameEditText;
+    protected EditText hostEditText;
+    protected EditText portEditText;
+    protected EditText usernameEditText;
+    protected EditText passwordEditText;
 
-    private GridLayout colorChooser;
+    protected SharedPreferences sharedPreferences;
 
     public CreateOrEditServerFragment() {}
 
@@ -78,7 +93,12 @@ public class CreateOrEditServerFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        this.refreshColorChooser();
+        this.refresh();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
     }
 
     @Nullable
@@ -87,20 +107,13 @@ public class CreateOrEditServerFragment extends Fragment {
         this.view = inflater.inflate(R.layout.create_edit_server, null);
 
         this.colorChooser = (GridLayout) this.view.findViewById(R.id.colors);
+        this.nameEditText = (EditText) this.view.findViewById(R.id.server_name);
+        this.hostEditText = (EditText) this.view.findViewById(R.id.server_host);
+        this.portEditText = (EditText) this.view.findViewById(R.id.server_port);
+        this.usernameEditText = (EditText) this.view.findViewById(R.id.server_username);
+        this.passwordEditText = (EditText) this.view.findViewById(R.id.server_password);
 
-        if (this.server != null) {
-            ((EditText) this.view.findViewById(R.id.server_name)).setText(this.server.getName());
-            ((EditText) this.view.findViewById(R.id.server_host)).setText(this.server.getHost());
-            ((EditText) this.view.findViewById(R.id.server_port)).setText(this.server.getPort() + "");
-            ((EditText) this.view.findViewById(R.id.server_username)).setText(this.server.getUsername());
-            ((EditText) this.view.findViewById(R.id.server_password)).setText(this.server.getPassword());
-
-            this.selectedColorIndex = Arrays.asList(Server.colors).indexOf(server.getColor());
-        } else {
-            this.selectedColorIndex = 0;
-        }
-
-        ((EditText) this.view.findViewById(R.id.server_name)).addTextChangedListener(new TextWatcher() {
+        this.nameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -121,7 +134,7 @@ public class CreateOrEditServerFragment extends Fragment {
         ((Button) this.view.findViewById(R.id.save)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                saveServer();
+                saveServer(null);
             }
         });
 
@@ -141,7 +154,7 @@ public class CreateOrEditServerFragment extends Fragment {
 
         ((BaseActivity) getActivity()).setToolbarTitle(this.server == null ? "New Server" : this.server.getName());
 
-        this.refreshColorChooser();
+        this.refresh();
     }
 
     @Override
@@ -162,25 +175,40 @@ public class CreateOrEditServerFragment extends Fragment {
             }
 
             case R.id.action_clone: {
-                if (this.server == null) return true;
-
-                this.server.setId(this.generateId());
-                this.saveServer();
+                this.cloneServer();
                 break;
             }
 
             case R.id.action_done: {
-                if (this.saveServer()) {
+                if (this.saveServer(null)) {
                     getActivity().getSupportFragmentManager().popBackStack();
                     getActivity().getSupportFragmentManager().findFragmentById(R.id.context_fragment).onResume();
                 }
 
                 break;
             }
+
+            case android.R.id.home: {
+                getActivity().getSupportFragmentManager().popBackStack();
+            }
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void refresh() {
+        this.nameEditText.setText(this.server.getName());
+        this.hostEditText.setText(this.server.getHost());
+        this.portEditText.setText(String.format(Locale.ENGLISH, "%d", this.server.getPort()));
+        this.usernameEditText.setText(this.server.getUsername());
+        this.passwordEditText.setText(this.server.getPassword());
+
+        this.selectedColorIndex = this.server == null ? new Random().nextInt(Server.colors.length) :
+                Arrays.asList(Server.colors).indexOf(server.getColor());
+
+        this.refreshColorChooser();
+    }
+
 
     public void refreshColorChooser() {
         this.colorChooser.removeAllViews();
@@ -212,66 +240,57 @@ public class CreateOrEditServerFragment extends Fragment {
 
             this.colorChooser.addView(layout);
         }
+
+        ((HorizontalScrollView) this.colorChooser.getParent()).smoothScrollTo((int) Utils.dpToPixels(getResources(), 48) * selectedColorIndex, 0);
     }
 
-    public boolean saveServer() {
-        JSONObject mServer = new JSONObject();
+    public boolean saveServer(String message) {
+        Map<String, Server> servers = this.getServers();
 
-        String id = (this.server == null) ? null : this.server.getId();
-
-        // TODO: 2015-11-26 MAKE SURE NO COLLISIONS
-        while (id == null) {
-            id = this.generateId();
+        if (this.server != null) {
+            this.server = servers.containsKey(this.server.getId()) ?
+                    servers.get(this.server.getId()) :
+                    new Server();
+        } else {
+            this.server = new Server();
         }
 
+        String id = (this.server.getId() == null || this.server.getId().equals("")) ? this.generateId() : this.server.getId();
         String name = ((EditText) this.view.findViewById(R.id.server_name)).getText().toString();
         String host = ((EditText) this.view.findViewById(R.id.server_host)).getText().toString();
         String mPort = ((EditText) this.view.findViewById(R.id.server_port)).getText().toString();
         String defaultDatabase = ((EditText) this.view.findViewById(R.id.server_default_db)).getText().toString();
-
-        int port = (mPort.equals("") ? 5432 : Integer.parseInt(mPort));
-        defaultDatabase = (defaultDatabase.equals("") ? "postgres" : defaultDatabase);
-
         String user = ((EditText) this.view.findViewById(R.id.server_username)).getText().toString();
         String password = ((EditText) this.view.findViewById(R.id.server_password)).getText().toString();
-
-        user = user.equals("") ? "postgres" : user;
-
         String color = Server.colors[this.selectedColorIndex];
 
-        if (name.equals("")) return false;
-
-        try {
-            mServer.put("id", id)
-                .put("name", name)
-                .put("host", host)
-                .put("port", port)
-                .put("db", defaultDatabase)
-                .put("user", user)
-                .put("password", password)
-                .put("color", color);
-        } catch (JSONException e) {
-            Log.d("EDITSERVER", e.getMessage());
+        if (name.equals("")) {
+            Snackbar snackbar = Snackbar.make(this.view, "Name cannot be blank", Snackbar.LENGTH_SHORT);
+            snackbar.show();
             return false;
         }
 
-        if (this.server == null) {
-            this.server = new Server(id, name, host, port, user, password, defaultDatabase, color);
-        } else {
-            this.server.setName(name);
-            this.server.setHost(host);
-            this.server.setPort(port);
-            this.server.setUsername(user);
-            this.server.setPassword(password);
-            this.server.setDefaultDatabase(defaultDatabase);
-            this.server.setColor(color);
-        }
+        defaultDatabase = (defaultDatabase.equals("") ? "postgres" : defaultDatabase);
+        int port = (mPort.equals("") ? 5432 : Integer.parseInt(mPort));
+        user = user.equals("") ? "postgres" : user;
 
-        String prefsKeyForId = this.getPrefsKeyForId(id);
+        this.server.setId(id);
+        this.server.setName(name);
+        this.server.setHost(host);
+        this.server.setPort(port);
+        this.server.setDefaultDatabase(defaultDatabase);
+        this.server.setUsername(user);
+        this.server.setPassword(password);
+        this.server.setColor(color);
 
+        servers.put(this.server.getId(), this.server);
 
         SharedPreferences.Editor editor = this.sharedPreferences.edit();
-        editor.putString(prefsKeyForId, mServer.toString()).commit();
+        editor.putString(AndroiDB.PREFERENCES_KEY_SERVERS, new Gson().toJson(servers)).commit();
+
+        message = message == null ? String.format(Locale.getDefault(), "Successfully saved %s", this.server.getName()) : message;
+        Snackbar snackbar = Snackbar.make(this.view, message, Snackbar.LENGTH_SHORT);
+        snackbar.show();
 
         return true;
     }
@@ -282,9 +301,36 @@ public class CreateOrEditServerFragment extends Fragment {
             .setPositiveButton("yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    sharedPreferences.edit().remove(getPrefsKeyForId(server.getId())).commit();
+                    Map<String, Server> servers = getServers();
+                    servers.remove(server.getId());
+
+                    sharedPreferences.edit().putString(AndroiDB.PREFERENCES_KEY_SERVERS, new Gson().toJson(servers)).commit();
                     getActivity().getSupportFragmentManager().popBackStack();
                     getActivity().getSupportFragmentManager().findFragmentById(R.id.context_fragment).onResume();
+                }
+            })
+            .setNegativeButton("no", null)
+            .create().show();
+    }
+
+    public void cloneServer() {
+        if (this.server == null) return;
+
+        new AlertDialog.Builder(getContext())
+            .setMessage("Are you sure you want to clone this server?")
+            .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    selectedColorIndex = new Random().nextInt(Server.colors.length - 1);
+
+                    String originalName = server.getName();
+
+                    server.setName("New Server");
+                    server.setId(generateId());
+                    server.setColor(Server.colors[selectedColorIndex]);
+                    refresh();
+
+                    saveServer(String.format(Locale.getDefault(), "Successfully cloned %s", originalName));
                 }
             })
             .setNegativeButton("no", null)
@@ -340,7 +386,13 @@ public class CreateOrEditServerFragment extends Fragment {
         return id;
     }
 
-    private String getPrefsKeyForId(String id) {
-        return AndroiDB.SHARED_PREFS_SERVER_PREFIX + id;
+    public Map<String, Server> getServers() {
+        Gson gson = new Gson();
+        SharedPreferences sharedPreferences = ((BaseActivity) getActivity()).getSharedPreferences();
+        String serverJson = sharedPreferences.getString(AndroiDB.PREFERENCES_KEY_SERVERS, "{}");
+
+        Type serverListType = new TypeToken<Map<String,Server>>(){}.getType();
+        Map<String, Server> servers = gson.fromJson(serverJson, serverListType);
+        return servers;
     }
 }

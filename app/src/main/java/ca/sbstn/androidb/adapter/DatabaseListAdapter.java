@@ -70,7 +70,6 @@ public class DatabaseListAdapter extends BaseAdapter {
 
     public Object getByName(String name) {
         for (Database database : this.databases) {
-            Log.d("asdasd", database.getName() + " " + name);
             if (database.getName().toLowerCase().equals(name.toLowerCase())) {
                 return database;
             }
