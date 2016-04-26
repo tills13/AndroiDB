@@ -83,7 +83,7 @@ public class DatabaseListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        //this.refresh(false);
+        this.refresh(false);
     }
 
     @Override
@@ -171,6 +171,7 @@ public class DatabaseListFragment extends Fragment {
                 refresh(false);
             }
         });
+
         this.refresh(false);
 
         return this.internalView;
@@ -186,6 +187,10 @@ public class DatabaseListFragment extends Fragment {
 
         ((BaseActivity) getActivity()).setToolbarTitle(this.server.getName());
         ((BaseActivity) getActivity()).setToolbarColor(Color.parseColor(this.server.getColor()));
+
+        this.connectionInfo.setBackgroundColor(this.server.getColor());
+        ((TextView) this.internalView.findViewById(R.id.connected_as_info))
+            .setText(String.format("Connected as %s", this.server.getUsername()));
 
         FetchDatabasesTask fetchDatabasesTask = new FetchDatabasesTask(this.getContext(), new Callback<List<Database>>() {
             @Override

@@ -22,7 +22,7 @@ public abstract class BaseTask<Params, Progress, Result> extends AsyncTask<Param
     protected ProgressBar progressBar;
 
     public BaseTask() {
-        this(null, null);
+        this(null);
     }
 
     public BaseTask(Context context) {
@@ -70,6 +70,13 @@ public abstract class BaseTask<Params, Progress, Result> extends AsyncTask<Param
 
     public ProgressBar getProgressBar() {
         return progressBar;
+    }
+
+    @Override
+    protected void onProgressUpdate(Progress ... progress) {
+        if (this.progressBar != null) {
+            this.progressBar.setProgress((Integer) progress[0]);
+        }
     }
 
     @Override

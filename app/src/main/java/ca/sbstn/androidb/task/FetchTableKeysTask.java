@@ -60,6 +60,8 @@ public class FetchTableKeysTask extends AsyncTask<Table, Void, Void> {
 
             table.setForeignKeys(foreignKeys);
             table.setPrimaryKeys(primaryKeys);
+
+            connection.close();
         } catch (SQLException e) {
             Log.e(FetchTableKeysTask.TAG, e.getMessage());
         }

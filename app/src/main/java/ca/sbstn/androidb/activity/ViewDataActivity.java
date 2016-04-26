@@ -4,14 +4,12 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import java.sql.SQLException;
 import java.util.Locale;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.callback.Callback;
-import ca.sbstn.androidb.fragment.DatabaseListFragment;
 import ca.sbstn.androidb.fragment.ViewDataFragment;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.SQLDataSet;
@@ -68,7 +66,7 @@ public class ViewDataActivity extends BaseActivity {
                     Exception exception = this.getTask().getException();
 
                     String sqlState = (exception instanceof SQLException) ? ((SQLException) exception).getSQLState() : "????";
-                    String message = (exception instanceof SQLException) ? ((SQLException) exception).getStackTrace().toString() : exception.getMessage();
+                    String message = exception.getMessage();
 
                     new AlertDialog.Builder(ViewDataActivity.this)
                             .setTitle(String.format(Locale.getDefault(), "[%s] Error", sqlState))

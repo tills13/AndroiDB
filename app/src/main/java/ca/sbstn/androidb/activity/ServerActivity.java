@@ -75,7 +75,7 @@ public class ServerActivity extends BaseActivity implements DatabaseListFragment
             }
 
             case R.id.action_new: {
-                CreateOrEditDatabaseFragment createOrEditDatabaseFragment = CreateOrEditDatabaseFragment.newInstance(null);
+                CreateOrEditDatabaseFragment createOrEditDatabaseFragment = CreateOrEditDatabaseFragment.newInstance(this.server);
                 this.putContextFragment(createOrEditDatabaseFragment, true);
             }
         }

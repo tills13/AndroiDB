@@ -3,11 +3,9 @@ package ca.sbstn.androidb.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,20 +18,15 @@ import android.widget.ListView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.activity.MainActivity;
-import ca.sbstn.androidb.application.AndroiDB;
 import ca.sbstn.androidb.adapter.ServerListAdapter;
+import ca.sbstn.androidb.application.AndroiDB;
 import ca.sbstn.androidb.sql.Server;
 
 /**
@@ -137,8 +130,8 @@ public class ServerListFragment extends Fragment {
 
         switch (itemId) {
             case R.id.action_new: {
-                Fragment fragment = CreateOrEditServerFragment.newInstance(null);
-                ((MainActivity) getActivity()).putDetailsFragment(fragment, true);
+                CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(null);
+                ((MainActivity) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
             }
         }
 

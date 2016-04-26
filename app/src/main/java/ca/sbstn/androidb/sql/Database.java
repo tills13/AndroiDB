@@ -1,8 +1,6 @@
 package ca.sbstn.androidb.sql;
 
 import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Locale;
 
 /**
@@ -14,20 +12,26 @@ public class Database implements Serializable {
     private String name;
     private String comment;
     private String owner;
+    protected String tableSpace;
+    protected boolean isTemplate;
 
-    public Database() {
-
-    }
+    public Database() {}
 
     public Database(Server server, String name, String owner) {
         this(server, name, owner, null);
     }
 
     public Database(Server server, String name, String owner, String comment) {
+        this(server, name, owner, comment, null, null);
+    }
+
+    public Database(Server server, String name, String owner, String comment, String tableSpace, boolean isTemplate) {
         this.server = server;
         this.name = name;
         this.owner = owner;
         this.comment = comment;
+        this.tableSpace = tableSpace;
+        this.isTemplate = isTemplate;
     }
 
     public String getConnectionString() {
@@ -38,19 +42,51 @@ public class Database implements Serializable {
         );
     }
 
-    public Server getServer() {
-        return this.server;
-    }
-
-    public String getName() {
-        return this.name;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public String getComment() {
         return this.comment;
     }
 
+    public boolean setIsTemplate(boolean isTemplate) {
+        this.isTemplate = isTemplate;
+    }
+
+    public boolean getIsTemplate() {
+        return this.isTemplate;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
     public String getOwner() {
         return this.owner;
+    }
+
+    public void setServer(Server server) {
+        this.server = server;
+    }
+
+    public Server getServer() {
+        return this.server;
+    }
+
+    public void setTableSpace(String tableSpace) {
+        this.tableSpace = tableSpace;
+    }
+
+    public String getTableSpace() {
+        return this.tableSpace;
     }
 }

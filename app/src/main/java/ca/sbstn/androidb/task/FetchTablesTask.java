@@ -1,7 +1,6 @@
 package ca.sbstn.androidb.task;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import java.sql.Connection;
@@ -10,7 +9,6 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.sbstn.androidb.adapter.TableListAdapter;
 import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.Server;
@@ -58,6 +56,8 @@ public class FetchTablesTask extends BaseTask<Database, Void, List<Table>> {
                 Table table = Table.from(results, database);
                 tables.add(table);
             }
+
+            connection.close();
         } catch (Exception e) {
             Log.d(FetchTablesTask.TAG, e.getMessage());
         }

@@ -1,8 +1,6 @@
 package ca.sbstn.androidb.task;
 
 import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,10 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sbstn.androidb.callback.Callback;
-import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.entity.Schema;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.sql.Server;
 
 /**
@@ -44,6 +40,8 @@ public class FetchSchemasTask extends BaseTask<Database, Void, List<Schema>> {
                 Schema schema = new Schema(results.getString("name"), database);
                 schemas.add(schema);
             }
+
+            connection.close();
         } catch (SQLException e) {
             this.setException(e);
         }

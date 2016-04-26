@@ -56,4 +56,40 @@
         android:layout_height="wrap_content"
         android:hint="@string/hint_comment"
         android:singleLine="false"/>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:textSize="@dimen/title_text_size"
+        android:textColor="@color/grey_400"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/database_title_table_space" />
+
+    <AutoCompleteTextView
+        android:id="@+id/database_tablespace"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_table_space"
+        android:singleLine="true"/>
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:textSize="@dimen/title_text_size"
+        android:textColor="@color/grey_400"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/database_title_template" />
+
+    <AutoCompleteTextView
+        android:id="@+id/database_template"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_template"
+        android:singleLine="true"/>
 </LinearLayout>

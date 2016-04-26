@@ -12,7 +12,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,14 +27,10 @@ import android.widget.LinearLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
@@ -197,11 +192,14 @@ public class CreateOrEditServerFragment extends Fragment {
     }
 
     public void refresh() {
-        this.nameEditText.setText(this.server.getName());
-        this.hostEditText.setText(this.server.getHost());
-        this.portEditText.setText(String.format(Locale.ENGLISH, "%d", this.server.getPort()));
-        this.usernameEditText.setText(this.server.getUsername());
-        this.passwordEditText.setText(this.server.getPassword());
+        if (this.server != null) {
+            this.nameEditText.setText(this.server.getName());
+            this.hostEditText.setText(this.server.getHost());
+            this.portEditText.setText(String.format(Locale.ENGLISH, "%d", this.server.getPort()));
+            this.usernameEditText.setText(this.server.getUsername());
+            this.passwordEditText.setText(this.server.getPassword());
+        }
+
 
         this.selectedColorIndex = this.server == null ? new Random().nextInt(Server.colors.length) :
                 Arrays.asList(Server.colors).indexOf(server.getColor());
