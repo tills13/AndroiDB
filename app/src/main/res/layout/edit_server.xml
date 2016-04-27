@@ -49,7 +49,8 @@
                 android:hint="@string/prompt_name"
                 android:layout_marginBottom="@dimen/title_padding"
                 android:inputType="text"
-                android:singleLine="true"/>
+                android:singleLine="true"
+                android:background="@drawable/edit_text"/>
         </LinearLayout>
 
         <LinearLayout
@@ -72,10 +73,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="@string/prompt_name"
+                android:hint="@string/prompt_host"
                 android:layout_marginBottom="@dimen/title_padding"
                 android:inputType="text"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:background="@drawable/edit_text"/>
         </LinearLayout>
 
         <LinearLayout
@@ -103,7 +105,8 @@
                 android:hint="@string/prompt_port"
                 android:inputType="number"
                 android:singleLine="true"
-                android:layout_weight="3"/>
+                android:layout_weight="3"
+                android:background="@drawable/edit_text"/>
         </LinearLayout>
 
         <LinearLayout
@@ -133,12 +136,9 @@
                 android:layout_marginEnd="16dp"
                 android:inputType="text"
                 android:maxLines="1"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:background="@drawable/edit_text"/>
         </LinearLayout>
-
-
-
-
 
         <TextView
             android:layout_width="fill_parent"
@@ -176,7 +176,8 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:inputType="text"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:background="@drawable/edit_text"/>
         </LinearLayout>
 
         <LinearLayout
@@ -207,7 +208,8 @@
                 android:layout_marginEnd="16dp"
                 android:inputType="textPassword"
                 android:maxLines="1"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:background="@drawable/edit_text"/>
         </LinearLayout>
 
         <LinearLayout
