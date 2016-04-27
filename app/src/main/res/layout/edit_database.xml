@@ -1,95 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:textSize="@dimen/title_text_size"
-        android:textColor="@color/grey_400"
-        android:fontFamily="sans-serif-medium"
-        android:text="@string/database_title_name" />
-
-    <EditText
-        android:id="@+id/database_name"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
+    <LinearLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/hint_name"
-        android:singleLine="true"/>
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="@dimen/title_text_size"
+            android:textColor="@color/grey_400"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/database_title_name" />
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:textSize="@dimen/title_text_size"
-        android:textColor="@color/grey_400"
-        android:fontFamily="sans-serif-medium"
-        android:text="@string/database_title_owner" />
+        <EditText
+            android:id="@+id/database_name"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_name"
+            android:singleLine="true"/>
 
-    <AutoCompleteTextView
-        android:id="@+id/database_owner"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_owner"
-        android:singleLine="true"/>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="@dimen/title_text_size"
+            android:textColor="@color/grey_400"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/database_title_owner" />
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:textSize="@dimen/title_text_size"
-        android:textColor="@color/grey_400"
-        android:fontFamily="sans-serif-medium"
-        android:text="@string/database_title_comment" />
+        <AutoCompleteTextView
+            android:id="@+id/database_owner"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_owner"
+            android:singleLine="true"/>
 
-    <EditText
-        android:id="@+id/database_comment"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_comment"
-        android:singleLine="false"/>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="@dimen/title_text_size"
+            android:textColor="@color/grey_400"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/database_title_comment" />
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:textSize="@dimen/title_text_size"
-        android:textColor="@color/grey_400"
-        android:fontFamily="sans-serif-medium"
-        android:text="@string/database_title_table_space" />
+        <EditText
+            android:id="@+id/database_comment"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_comment"
+            android:singleLine="false"/>
 
-    <AutoCompleteTextView
-        android:id="@+id/database_tablespace"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_table_space"
-        android:singleLine="true"/>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="@dimen/title_text_size"
+            android:textColor="@color/grey_400"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/database_title_tablespace" />
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:textSize="@dimen/title_text_size"
-        android:textColor="@color/grey_400"
-        android:fontFamily="sans-serif-medium"
-        android:text="@string/database_title_template" />
+        <AutoCompleteTextView
+            android:id="@+id/database_tablespace"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_tablespace"
+            android:singleLine="true"/>
 
-    <AutoCompleteTextView
-        android:id="@+id/database_template"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/hint_template"
-        android:singleLine="true"/>
-</LinearLayout>
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="@dimen/title_text_size"
+            android:textColor="@color/grey_400"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/database_title_template" />
+
+        <AutoCompleteTextView
+            android:id="@+id/database_template"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_template"
+            android:singleLine="true"/>
+    </LinearLayout>
+</ScrollView>

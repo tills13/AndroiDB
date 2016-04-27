@@ -188,7 +188,8 @@ public class DatabaseListFragment extends Fragment {
         ((BaseActivity) getActivity()).setToolbarTitle(this.server.getName());
         ((BaseActivity) getActivity()).setToolbarColor(Color.parseColor(this.server.getColor()));
 
-        this.connectionInfo.setBackgroundColor(this.server.getColor());
+        this.connectionInfo.setBackgroundColor(Color.parseColor(this.server.getColor()));
+
         ((TextView) this.internalView.findViewById(R.id.connected_as_info))
             .setText(String.format("Connected as %s", this.server.getUsername()));
 

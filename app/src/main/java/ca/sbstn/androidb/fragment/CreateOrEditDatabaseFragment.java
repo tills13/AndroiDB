@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ScrollingView;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,6 +21,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.sql.Database;
+import ca.sbstn.androidb.sql.Query;
 import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.task.ExecuteQueryTask;
@@ -50,12 +53,15 @@ public class CreateOrEditDatabaseFragment extends Fragment {
     private String originalName;
     private String originalOwner;
     private String originalComment;
+    protected String originalTableSpace;
 
-    private LinearLayout layout;
-    private EditText nameField;
-    private AutoCompleteTextView ownerField;
-    private EditText commentField;
-    private AutoCompleteTextView tableSpaceField;
+    protected ScrollView layout;
+    protected LinearLayout container;
+    protected EditText nameField;
+    protected AutoCompleteTextView ownerField;
+    protected EditText commentField;
+    protected AutoCompleteTextView tableSpaceField;
+    protected AutoCompleteTextView templateField;
 
     public CreateOrEditDatabaseFragment() {}
 
@@ -114,90 +120,48 @@ public class CreateOrEditDatabaseFragment extends Fragment {
 
     public void saveDatabase() {
         final String newName = this.nameField.getText().toString();
-        String newOwner = this.ownerField.getText().toString();
+        final String newOwner = this.ownerField.getText().toString();
         final String newComment = this.commentField.getText().toString();
+        final String newTableSpace = this.tableSpaceField.getText().toString();
+        String template = this.templateField.getText().toString();
 
         if (this.mode == MODE_UPDATE) {
-            String baseQuery = String.format("ALTER DATABASE \"%s\"", this.database.getName());
-            String commentQuery = String.format("COMMENT ON DATABASE \"%s\" IS '%s'", this.database.getName(), newComment);
-
-            ExecuteQueryTask executeQueryTask;
-            if (!newOwner.equals(this.originalOwner)) {
-                ProgressBar updateTableSpaceBar = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
-                this.layout.addView(updateTableSpaceBar, this.layout.indexOfChild(this.tableSpaceField) + 1);
-
-                ExecuteQueryTask updateTableSpaceTask = new ExecuteQueryTask(this.database, getContext(), new Callback<SQLDataSet>() {
-                    @Override
-                    public void onResult(SQLDataSet result) {
-                        if (!this.getTask().hasException()) {
-                            Snackbar.make(getView(), "Successfully updated tablespace", Snackbar.LENGTH_SHORT).show();
-                        } else {
-                            Exception exception = this.getTask().getException();
-                            Snackbar.make(getView(), String.format(Locale.getDefault(), "Something went wrong: %s", exception.getMessage()), Snackbar.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-
-                updateTableSpaceTask.setProgressBar(updateTableSpaceBar);
-                updateTableSpaceTask.execute(baseQuery + String.format(" SET TABLESPACE TO \"%s\";", newTableSpace));
+            if (newName.equals(this.originalName) &&
+                newTableSpace.equals(this.originalTableSpace) &&
+                newOwner.equals(this.originalOwner) &&
+                newComment.equals(this.originalComment)) {
+                return;
             }
 
-            if (!newTableSpace.equals(this.originalTableSpace)) {
-                ExecuteQueryTask updateOwnerTask = new ExecuteQueryTask(this.database, getContext(), new Callback<SQLDataSet>() {
-                    @Override
-                    public void onResult(SQLDataSet result) {
-                        if (!this.getTask().hasException()) {
-                            Snackbar.make(getView(), "Successfully updated owner", Snackbar.LENGTH_SHORT).show();
-                        } else {
-                            Exception exception = this.getTask().getException();
-                            Snackbar.make(getView(), String.format(Locale.getDefault(), "Something went wrong: %s", exception.getMessage()), Snackbar.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+            String query = "BEGIN TRANSACTION;";
 
-                updateOwnerTask.setProgressBar(updateOwnerBar);
-                updateOwnerTask.execute(baseQuery + String.format(" OWNER TO %s;", newOwner));
+            if (!newName.equals(this.originalName)) {
+                query = query + String.format(Locale.getDefault(), "ALTER DATABASE \"%s\" RENAME TO \"%s\";", this.database.getName(), newName);
+                this.database.setName(newName);
             }
 
-            /*if (!newName.equals(this.originalName)) {
-                ProgressBar updateCommentBar = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
-                this.layout.addView(updateCommentBar, this.layout.indexOfChild(this.commentField) + 1);
+            if (!newTableSpace.equals(this.originalTableSpace)) query = query + String.format(Locale.getDefault(), "ALTER DATABASE \"%s\" SET TABLESPACE \"%s\";", this.database.getName(), newTableSpace);
+            if (!newOwner.equals(this.originalOwner)) query = query + String.format(Locale.getDefault(), "ALTER DATABASE \"%s\" OWNER TO \"%s\";",this.database.getName(), newOwner);
+            if (!newComment.equals(this.originalComment)) query = query + String.format("COMMENT ON DATABASE \"%s\" IS '%s';", this.database.getName(), newComment);
+            query = query + "COMMIT;";
 
-                ExecuteQueryTask updateCommentTask = new ExecuteQueryTask(this.database, getContext(), new Callback<SQLDataSet>() {
-                    @Override
-                    public void onResult(SQLDataSet result) {
-                        if (!this.getTask().hasException()) {
-                            Snackbar.make(getView(), "Successfully updated comment", Snackbar.LENGTH_SHORT).show();
-                        } else {
-                            Exception exception = this.getTask().getException();
-                            Snackbar.make(getView(), String.format(Locale.getDefault(), "Something went wrong: %s", exception.getMessage()), Snackbar.LENGTH_SHORT).show();
-                        }
+            ExecuteQueryTask updateDatabaseTask = new ExecuteQueryTask(this.server, getContext(), new Callback<SQLDataSet>() {
+                @Override
+                public void onResult(SQLDataSet result) {
+                    if (!this.getTask().hasException()) {
+                        if (!newName.equals(originalName)) database.setName(newName);
+                        if (!newTableSpace.equals(originalTableSpace)) database.setTableSpace(newTableSpace);
+                        if (!newOwner.equals(originalOwner)) database.setOwner(newOwner);
+
+                        Snackbar.make(getView(), String.format(Locale.getDefault(), "Successfully updated %s", database.getName()), Snackbar.LENGTH_SHORT).show();
+                    } else {
+                        Exception exception = this.getTask().getException();
+                        Snackbar.make(getView(), String.format(Locale.getDefault(), "Something went wrong: %s", exception.getMessage()), Snackbar.LENGTH_LONG).show();
                     }
-                });
+                }
+            });
 
-                updateCommentTask.setProgressBar(updateCommentBar);
-                updateCommentTask.execute(commentQuery);
-            }*/
-
-            if (!this.originalComment.equals(newComment)) {
-                ProgressBar updateCommentBar = new ProgressBar(getActivity(), null, android.R.attr.progressBarStyleHorizontal);
-                this.layout.addView(updateCommentBar, this.layout.indexOfChild(this.commentField) + 1);
-
-                ExecuteQueryTask updateCommentTask = new ExecuteQueryTask(this.database, getContext(), new Callback<SQLDataSet>() {
-                    @Override
-                    public void onResult(SQLDataSet result) {
-                        if (!this.getTask().hasException()) {
-                            Snackbar.make(getView(), "Successfully updated comment", Snackbar.LENGTH_SHORT).show();
-                        } else {
-                            Exception exception = this.getTask().getException();
-                            Snackbar.make(getView(), String.format(Locale.getDefault(), "Something went wrong: %s", exception.getMessage()), Snackbar.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-
-                updateCommentTask.setProgressBar(updateCommentBar);
-                updateCommentTask.execute(commentQuery);
-            }
+            updateDatabaseTask.setExpectResults(false).execute(query);
         } else {
             this.database.setName(newName);
             this.database.setOwner(newOwner);
@@ -208,7 +172,7 @@ public class CreateOrEditDatabaseFragment extends Fragment {
                 @Override
                 public void onResult(SQLDataSet result) {
                     if (this.getTask().hasException()) {
-                        Snackbar snackbar = Snackbar.make(getView(), String.format(Locale.getDefault(), "Could not create database %s: %s", newName, this.getTask().getException().getMessage()), Snackbar.LENGTH_SHORT);
+                        Snackbar snackbar = Snackbar.make(getView(), String.format(Locale.getDefault(), "Could not create database %s: %s", newName, this.getTask().getException().getMessage()), Snackbar.LENGTH_LONG);
                         ((TextView) snackbar.getView().findViewById(android.support.design.R.id.snackbar_text)).setTextColor(Color.RED);
                         snackbar.show();
                     } else {
@@ -226,8 +190,8 @@ public class CreateOrEditDatabaseFragment extends Fragment {
                 }
             });
 
-            String query = "CREATE DATABASE \"%s\" WITH OWNER '%s' TABLESPACE = '%s';";
-            query = String.format(Locale.getDefault(), query, this.database.getName(), this.database.getOwner(), this.database.getTableSpace());
+            String query = "CREATE DATABASE \"%s\" WITH OWNER '%s' TABLESPACE = '%s' TEMPLATE \"%s\";";
+            query = String.format(Locale.getDefault(), query, this.database.getName(), this.database.getOwner(), this.database.getTableSpace(), template == null ? "DEFAULT" : template);
 
             createDatabaseTask.setExpectResults(false);
             createDatabaseTask.execute(query);
@@ -323,7 +287,7 @@ public class CreateOrEditDatabaseFragment extends Fragment {
                 String [] mTableSpaces = new String[tableSpaces.size()];
                 ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line, tableSpaces.toArray(mTableSpaces));
 
-                if (tableSpaceField.getText().equals("")) {
+                if (tableSpaceField.getText().toString().equals("")) {
                     tableSpaceField.setText(mTableSpaces[0]);
                 }
 
@@ -334,18 +298,44 @@ public class CreateOrEditDatabaseFragment extends Fragment {
         ExecuteQueryTask fetchRolesTask = this.mode == MODE_CREATE ? new ExecuteQueryTask(this.server, getContext(), callback) :
                                                                      new ExecuteQueryTask(this.database, getContext(), callback);
 
-        fetchRolesTask.execute("SELECT rolname FROM pg_roles;");
+        fetchRolesTask.execute("SELECT * FROM pg_tablespace;");
+    }
+
+    public void fetchTemplateList() {
+        Callback<SQLDataSet> callback = new Callback<SQLDataSet>() {
+            @Override
+            public void onResult(SQLDataSet result) {
+                List<String> templateDatabases = new ArrayList<>();
+
+                for (SQLDataSet.Row row : result) {
+                    templateDatabases.add(row.getString("name"));
+                }
+
+                String [] mTemplateDatabases = new String[templateDatabases.size()];
+                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line, templateDatabases.toArray(mTemplateDatabases));
+
+                if (templateField.getText().toString().equals("")) {
+                    templateField.setText(mTemplateDatabases[0]);
+                }
+
+                templateField.setAdapter(adapter);
+            }
+        };
+
+        ExecuteQueryTask fetchRolesTask = new ExecuteQueryTask(this.server, getContext(), callback);
+        fetchRolesTask.execute("SELECT datname AS name FROM pg_database pgd WHERE pgd.datistemplate IS TRUE;");
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.layout = (LinearLayout) inflater.inflate(R.layout.edit_database, null);
+        this.layout = (ScrollView) inflater.inflate(R.layout.edit_database, null);
+        this.container = (LinearLayout) this.layout.findViewById(R.id.container);
 
         this.nameField = ((EditText) this.layout.findViewById(R.id.database_name));
         this.ownerField = ((AutoCompleteTextView) this.layout.findViewById(R.id.database_owner));
         this.commentField = ((EditText) this.layout.findViewById(R.id.database_comment));
-        this.tableSpaceField = ((AutoCompleteTextView) this.layout.findViewById(R.id.database_title_table_space));
+        this.tableSpaceField = ((AutoCompleteTextView) this.layout.findViewById(R.id.database_tablespace));
         this.templateField = ((AutoCompleteTextView) this.layout.findViewById(R.id.database_template));
 
         this.nameField.setText(this.database.getName());

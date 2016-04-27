@@ -13,6 +13,7 @@
         android:theme="@style/AndroiDB.AppTheme" >
         <activity
             android:name="ca.sbstn.androidb.activity.MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,16 +24,19 @@
         <activity
             android:name="ca.sbstn.androidb.activity.ServerActivity"
             android:parentActivityName=".activity.MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:label="@string/app_name" />
 
         <activity
             android:name="ca.sbstn.androidb.activity.DatabaseActivity"
             android:parentActivityName=".activity.ServerActivity"
+            android:windowSoftInputMode="adjustResize"
             android:label="@string/app_name" />
 
         <activity
             android:name="ca.sbstn.androidb.activity.ViewDataActivity"
             android:parentActivityName=".activity.DatabaseActivity"
+            android:windowSoftInputMode="adjustResize"
             android:label="@string/app_name" />
     </application>
 </manifest>

@@ -22,7 +22,7 @@ public class Database implements Serializable {
     }
 
     public Database(Server server, String name, String owner, String comment) {
-        this(server, name, owner, comment, null, null);
+        this(server, name, owner, comment, null, false);
     }
 
     public Database(Server server, String name, String owner, String comment, String tableSpace, boolean isTemplate) {
@@ -50,7 +50,7 @@ public class Database implements Serializable {
         return this.comment;
     }
 
-    public boolean setIsTemplate(boolean isTemplate) {
+    public void setIsTemplate(boolean isTemplate) {
         this.isTemplate = isTemplate;
     }
 

@@ -47,8 +47,10 @@ public class ExecuteQueryTask extends BaseTask<String, Void, SQLDataSet> {
         this.expectResults = true;
     }
 
-    public void setExpectResults(boolean expectResults) {
+    public ExecuteQueryTask setExpectResults(boolean expectResults) {
         this.expectResults = expectResults;
+
+        return this;
     }
 
     public boolean isExpectResults() {
