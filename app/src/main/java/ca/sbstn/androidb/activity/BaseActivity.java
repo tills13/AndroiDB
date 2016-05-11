@@ -15,9 +15,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.application.*;
 import ca.sbstn.androidb.application.AndroiDB;
 import ca.sbstn.androidb.util.Colours;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 /**
  * Created by tyler on 21/04/16.
@@ -27,6 +28,7 @@ public class BaseActivity extends AppCompatActivity {
     protected SharedPreferences sharedPreferences;
     protected FragmentManager fragmentManager;
     private ValueAnimator actionbarAnimator;
+    private Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,14 @@ public class BaseActivity extends AppCompatActivity {
 
         this.fragmentManager = this.getSupportFragmentManager();
         this.sharedPreferences = this.getSharedPreferences(AndroiDB.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
+
+        //byte[] key = new byte[64];
+        //new SecureRandom().nextBytes(key);
+        RealmConfiguration config = new RealmConfiguration.Builder(this)
+            //.encryptionKey(key)
+            .build();
+
+        this.realm = Realm.getInstance(config);
     }
 
     public SharedPreferences getSharedPreferences() {
@@ -86,6 +96,10 @@ public class BaseActivity extends AppCompatActivity {
                     //.addToBackStack(null)
                     .commit();
         }
+    }
+
+    public Realm getRealm() {
+        return this.realm;
     }
 
     public void setToolbarTitle(String title) {

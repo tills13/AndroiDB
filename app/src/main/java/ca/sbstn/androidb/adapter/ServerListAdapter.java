@@ -9,32 +9,27 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.sql.Server;
+import ca.sbstn.androidb.entity.Server;
 
 /**
  * Created by tills13 on 15-06-26.
  */
 public class ServerListAdapter extends BaseAdapter {
     public Context context;
-    public Map<String, Server> servers;
-    public String[] serverKeys;
+    public List<Server> servers;
 
     public ServerListAdapter(Context context) {
         super();
 
         this.context = context;
-        this.servers = new HashMap<>();
-        this.serverKeys = new String[this.servers.size()];
+        this.servers = new ArrayList<>();
     }
 
-    public void setServers(Map<String, Server> servers) {
+    public void setServers(List<Server> servers) {
         this.servers = servers;
-        this.serverKeys = servers.keySet().toArray(this.serverKeys);
     }
 
     @Override
@@ -66,7 +61,7 @@ public class ServerListAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return this.servers.get(this.serverKeys[position]);
+        return this.servers.get(position);
     }
 
     @Override

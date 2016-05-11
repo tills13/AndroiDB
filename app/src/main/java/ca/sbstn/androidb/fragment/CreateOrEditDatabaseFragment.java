@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.ScrollingView;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,7 +19,6 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -31,18 +29,19 @@ import java.util.Locale;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.callback.Callback;
+import ca.sbstn.androidb.database.RealmUtils;
+import ca.sbstn.androidb.entity.Server;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.sql.Query;
 import ca.sbstn.androidb.sql.SQLDataSet;
-import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.task.ExecuteQueryTask;
+import io.realm.Realm;
 
 /**
  * Created by tills13 on 2015-11-22.
  */
 public class CreateOrEditDatabaseFragment extends Fragment {
     public static final String DATABASE_PARAM = "DATABASE";
-    public static final String SERVER_PARAM = "SERVER";
+    public static final String SERVER_PARAM_ID = "SERVER_ID";
     public static final int MODE_CREATE = 0;
     public static final int MODE_UPDATE = 1;
 
@@ -63,13 +62,15 @@ public class CreateOrEditDatabaseFragment extends Fragment {
     protected AutoCompleteTextView tableSpaceField;
     protected AutoCompleteTextView templateField;
 
+    protected Realm realm;
+
     public CreateOrEditDatabaseFragment() {}
 
     public static CreateOrEditDatabaseFragment newInstance(Server server) {
         CreateOrEditDatabaseFragment fragment = new CreateOrEditDatabaseFragment();
 
         Bundle bundle = new Bundle();
-        bundle.putSerializable(SERVER_PARAM, server);
+        bundle.putSerializable(SERVER_PARAM_ID, server.getId());
 
         fragment.setArguments(bundle);
         return fragment;
@@ -90,6 +91,7 @@ public class CreateOrEditDatabaseFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
+        this.realm = RealmUtils.getRealm(getContext());
 
         if (this.getArguments() != null) {
             this.database = (Database) this.getArguments().getSerializable(DATABASE_PARAM);
@@ -105,7 +107,8 @@ public class CreateOrEditDatabaseFragment extends Fragment {
                 ((BaseActivity) getActivity()).setToolbarTitle(this.originalName);
             } else {
                 this.mode = MODE_CREATE;
-                this.server = (Server) this.getArguments().getSerializable(SERVER_PARAM);
+                int serverId = this.getArguments().getInt(SERVER_PARAM_ID);
+                this.server = this.realm.where(Server.class).equalTo("id", serverId).findFirst();
                 this.database = new Database(this.server, "New Database", "postgres");
 
                 ((BaseActivity) getActivity()).setToolbarTitle("New Database");

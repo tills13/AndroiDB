@@ -2,7 +2,6 @@ package ca.sbstn.androidb.fragment;
 
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,19 +14,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
 import java.util.List;
-import java.util.Map;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.activity.MainActivity;
 import ca.sbstn.androidb.adapter.ServerListAdapter;
-import ca.sbstn.androidb.application.AndroiDB;
-import ca.sbstn.androidb.sql.Server;
+import ca.sbstn.androidb.database.RealmUtils;
+import ca.sbstn.androidb.entity.Server;
+import io.realm.Realm;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,6 +52,7 @@ public class ServerListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.adapter = new ServerListAdapter(getActivity());
+        this.update();
     }
 
     @Override
@@ -77,8 +72,6 @@ public class ServerListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        this.adapter.setServers(this.loadServers());
-        this.adapter.notifyDataSetChanged();
         ((MainActivity) getActivity()).setToolbarTitle(getResources().getString(R.string.app_name));
         ((MainActivity) getActivity()).setToolbarColor(getResources().getColor(R.color.colorPrimary), true, true);
     }
@@ -138,13 +131,13 @@ public class ServerListFragment extends Fragment {
         return true;
     }
 
-    public Map<String, Server> loadServers() {
-        Gson gson = new Gson();
-        SharedPreferences sharedPreferences = ((BaseActivity) getActivity()).getSharedPreferences();
-        String serverJson = sharedPreferences.getString(AndroiDB.PREFERENCES_KEY_SERVERS, "{}");
+    public void update() {
+        if (this.adapter == null) return;
 
-        Type serverListType = new TypeToken<Map<String, Server>>(){}.getType();
-        return gson.fromJson(serverJson, serverListType);
+        Realm realm = RealmUtils.getRealm(getContext());
+        List<ca.sbstn.androidb.entity.Server> servers = realm.where(Server.class).findAll();
+        this.adapter.setServers(servers);
+        this.adapter.notifyDataSetChanged();
     }
 
     public interface OnServerSelectedListener {

@@ -12,7 +12,7 @@ import java.util.Locale;
 import ca.sbstn.androidb.callback.Callback;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.SQLDataSet;
-import ca.sbstn.androidb.sql.Server;
+import ca.sbstn.androidb.entity.Server;
 import ca.sbstn.androidb.sql.Table;
 
 /**

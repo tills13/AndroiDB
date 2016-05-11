@@ -25,26 +25,19 @@ import ca.sbstn.androidb.fragment.CreateOrEditDatabaseFragment;
 import ca.sbstn.androidb.fragment.CreateOrEditServerFragment;
 import ca.sbstn.androidb.fragment.DatabaseListFragment;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.sql.Server;
+import ca.sbstn.androidb.entity.Server;
 
 /**
  * Created by tyler on 21/04/16.
  */
 public class ServerActivity extends BaseActivity implements DatabaseListFragment.OnDatabaseSelectedListener {
-    public static final String SERVER_PARAM = "SERVER";
+    public static final String SERVER_PARAM_ID = "SERVER_ID";
     protected Server server;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setContentView(R.layout.layout_main);
         super.onCreate(savedInstanceState);
-
-        if (savedInstanceState != null) {
-            if (!savedInstanceState.containsKey(SERVER_PARAM)) finish();
-            this.server = (Server) savedInstanceState.get(SERVER_PARAM);
-        } else {
-            this.server = (Server) getIntent().getSerializableExtra(SERVER_PARAM);
-        }
 
         this.setToolbarColor(this.server.getColor(), true);
 
@@ -54,7 +47,7 @@ public class ServerActivity extends BaseActivity implements DatabaseListFragment
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(SERVER_PARAM, this.server);
+        outState.putSerializable(SERVER_PARAM_ID, this.server.getId());
 
         super.onSaveInstanceState(outState);
     }

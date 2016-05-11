@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,15 +27,15 @@ import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.activity.ServerActivity;
 import ca.sbstn.androidb.adapter.DatabaseListAdapter;
 import ca.sbstn.androidb.callback.Callback;
-import ca.sbstn.androidb.callback.SQLExecuteCallback;
+import ca.sbstn.androidb.database.RealmUtils;
+import ca.sbstn.androidb.entity.Server;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.sql.SQLDataSet;
-import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.task.FetchDatabasesTask;
 import ca.sbstn.androidb.util.Colours;
+import io.realm.Realm;
 
 public class DatabaseListFragment extends Fragment {
-    public static final String SERVER_PARAM = "SERVER";
+    public static final String SERVER_PARAM_ID = "SERVER_ID";
 
     private Server server;
 
@@ -49,7 +48,8 @@ public class DatabaseListFragment extends Fragment {
 
     //private FetchDatabasesTask fetchDatabasesTask;
 
-    private OnDatabaseSelectedListener mListener;
+    protected OnDatabaseSelectedListener mListener;
+    protected Realm realm;
 
     public DatabaseListFragment() {}
 
@@ -57,7 +57,7 @@ public class DatabaseListFragment extends Fragment {
         DatabaseListFragment fragment = new DatabaseListFragment();
 
         Bundle bundle = new Bundle();
-        bundle.putSerializable(SERVER_PARAM, server);
+        bundle.putSerializable(SERVER_PARAM_ID, server.getId());
 
         fragment.setArguments(bundle);
         return fragment;
@@ -73,9 +73,11 @@ public class DatabaseListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
+        this.realm = RealmUtils.getRealm(getContext());
 
         if (getArguments() != null) {
-            this.server = (Server) getArguments().getSerializable(SERVER_PARAM);
+            int serverId = getArguments().getInt(SERVER_PARAM_ID);
+            this.server = this.realm.where(Server.class).equalTo("id", serverId).findFirst();
             this.adapter = new DatabaseListAdapter(getActivity());
         }
     }

@@ -2,6 +2,7 @@ package ca.sbstn.androidb.sql;
 
 import java.io.Serializable;
 import java.util.Locale;
+import ca.sbstn.androidb.entity.Server;
 
 /**
  * Created by tills13 on 2015-07-10.
