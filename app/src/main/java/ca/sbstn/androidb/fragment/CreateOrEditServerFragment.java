@@ -1,9 +1,7 @@
 package ca.sbstn.androidb.fragment;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,32 +28,29 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
-import ca.sbstn.androidb.application.AndroiDB;
-import ca.sbstn.androidb.database.RealmUtils;
 import ca.sbstn.androidb.entity.Server;
 import ca.sbstn.androidb.util.Utils;
+import ca.sbstn.androidb.view.ColorChooser;
 import io.realm.Realm;
+import okhttp3.HttpUrl;
 
-/**
- * Created by tills13 on 2015-11-23.
- */
 public class CreateOrEditServerFragment extends Fragment {
-    public static final String PARAM_SERVER_ID = "SERVER_ID";
+    public static final String PARAM_SERVER_NAME = "SERVER_NAME";
 
     private Server server;
-    private View view;
-    private int selectedColorIndex;
+    private View layout;
 
-    protected GridLayout colorChooser;
-    protected EditText nameEditText;
-    protected EditText hostEditText;
-    protected EditText portEditText;
-    protected EditText usernameEditText;
-    protected EditText passwordEditText;
+    @BindView(R.id.color_chooser) protected ColorChooser colorChooser;
+    @BindView(R.id.server_name) protected EditText nameEditText;
+    @BindView(R.id.server_host) protected EditText hostEditText;
+    @BindView(R.id.server_port) protected EditText portEditText;
+    @BindView(R.id.server_username) protected EditText usernameEditText;
+    @BindView(R.id.server_password) protected EditText passwordEditText;
 
-    protected SharedPreferences sharedPreferences;
     protected Realm realm;
 
     public CreateOrEditServerFragment() {}
@@ -65,7 +60,7 @@ public class CreateOrEditServerFragment extends Fragment {
 
         if (server != null) {
             Bundle bundle = new Bundle();
-            bundle.putSerializable(PARAM_SERVER_ID, server.getId());
+            bundle.putSerializable(PARAM_SERVER_NAME, server.getName());
 
             createOrEditServerFragment.setArguments(bundle);
         }
@@ -78,19 +73,7 @@ public class CreateOrEditServerFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
-        this.sharedPreferences = getActivity().getSharedPreferences(AndroiDB.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
-        this.realm = RealmUtils.getRealm(getContext());
-        this.realm.beginTransaction();
-
-        if (this.getArguments() != null) {
-            int serverId = this.getArguments().getInt(PARAM_SERVER_ID);
-            this.server = this.realm.where(Server.class).equalTo("id", serverId).findFirst();
-        } else {
-            int nextKey = this.realm.where(Server.class).max("id").intValue() + 1;
-            this.server = new Server();
-            this.server.setId(nextKey);
-            this.server = this.realm.copyToRealm(this.server);
-        }
+        this.realm = Realm.getDefaultInstance();
     }
 
     @Override
@@ -109,48 +92,18 @@ public class CreateOrEditServerFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.view = inflater.inflate(R.layout.create_edit_server, null);
+        this.layout = inflater.inflate(R.layout.create_edit_server, null);
+        ButterKnife.bind(this, this.layout);
 
-        this.colorChooser = (GridLayout) this.view.findViewById(R.id.colors);
-        this.nameEditText = (EditText) this.view.findViewById(R.id.server_name);
-        this.hostEditText = (EditText) this.view.findViewById(R.id.server_host);
-        this.portEditText = (EditText) this.view.findViewById(R.id.server_port);
-        this.usernameEditText = (EditText) this.view.findViewById(R.id.server_username);
-        this.passwordEditText = (EditText) this.view.findViewById(R.id.server_password);
+        // TODO: 2/9/17 change actionbar title based on serverName textedit content
 
-        this.nameEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        Button saveButton = (Button) this.layout.findViewById(R.id.save_server);
+        Button testConnectionButton = (Button) this.layout.findViewById(R.id.test_connection);
 
-            }
+        saveButton.setOnClickListener((view) -> saveServer(null));
+        testConnectionButton.setOnClickListener((view) -> testConnection());
 
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                String text = editable.toString();
-                ((BaseActivity) getActivity()).setToolbarTitle(text);
-            }
-        });
-
-        ((Button) this.view.findViewById(R.id.save)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                saveServer(null);
-            }
-        });
-
-        ((Button) this.view.findViewById(R.id.test)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                testConnection();
-            }
-        });
-
-        return this.view;
+        return this.layout;
     }
 
     @Override
@@ -186,8 +139,6 @@ public class CreateOrEditServerFragment extends Fragment {
 
             case R.id.action_done: {
                 if (this.saveServer(null)) {
-                    this.realm.commitTransaction();
-
                     getActivity().getSupportFragmentManager().popBackStack();
                     getActivity().getSupportFragmentManager().findFragmentById(R.id.context_fragment).onResume();
                 }
@@ -196,7 +147,6 @@ public class CreateOrEditServerFragment extends Fragment {
             }
 
             case android.R.id.home: {
-                this.realm.cancelTransaction();
                 getActivity().getSupportFragmentManager().popBackStack();
             }
         }
@@ -211,11 +161,7 @@ public class CreateOrEditServerFragment extends Fragment {
         this.usernameEditText.setText(this.server.getUsername());
         this.passwordEditText.setText(this.server.getPassword());
 
-        if (this.server.getColor() == null || this.server.getColor().equals("")) {
-            this.selectedColorIndex = new Random().nextInt(Server.colors.length);
-        } else {
-            this.selectedColorIndex = Arrays.asList(Server.colors).indexOf(server.getColor());
-        }
+
 
         this.refreshColorChooser();
     }
@@ -255,17 +201,48 @@ public class CreateOrEditServerFragment extends Fragment {
         ((HorizontalScrollView) this.colorChooser.getParent()).smoothScrollTo((int) Utils.dpToPixels(getResources(), 48) * selectedColorIndex, 0);
     }
 
+    public Server onSave(String message) {
+        Realm realm = Realm.getDefaultInstance();
+        String primaryKey = this.nameEditText.getText().toString();
+
+        if (primaryKey.equals("")) {
+            Snackbar.make(this.layout, "CI server name cannot be blank", Snackbar.LENGTH_LONG).show();
+            return null;
+        }
+
+        realm.beginTransaction();
+
+        Server server = (this.serverName != null && !this.serverName.equals("")) ?
+                realm.where(Server.class).equalTo("name", this.serverName) :
+                realm.createObject(Server.class, primaryKey);
+
+        if (this.serverName != null && !this.serverName.equals(primaryKey)) {
+            server.setName(primaryKey);
+        }
+
+        HttpUrl url = HttpUrl.parse(this.hostEditText.getText().toString());
+        if (url == null) {
+            Snackbar.make(this.layout, "Enter a valid hostname", Snackbar.LENGTH_LONG).show();
+            realm.cancelTransaction();
+            return null;
+        }
+
+
+        realm.commitTransaction();
+        return server;
+    }
+
     public boolean saveServer(String message) {
-        String name = ((EditText) this.view.findViewById(R.id.server_name)).getText().toString();
-        String host = ((EditText) this.view.findViewById(R.id.server_host)).getText().toString();
-        String mPort = ((EditText) this.view.findViewById(R.id.server_port)).getText().toString();
-        String defaultDatabase = ((EditText) this.view.findViewById(R.id.server_default_db)).getText().toString();
-        String user = ((EditText) this.view.findViewById(R.id.server_username)).getText().toString();
-        String password = ((EditText) this.view.findViewById(R.id.server_password)).getText().toString();
+        String name = ((EditText) this.layout.findViewById(R.id.server_name)).getText().toString();
+        String host = ((EditText) this.layout.findViewById(R.id.server_host)).getText().toString();
+        String mPort = ((EditText) this.layout.findViewById(R.id.server_port)).getText().toString();
+        String defaultDatabase = ((EditText) this.layout.findViewById(R.id.server_default_db)).getText().toString();
+        String user = ((EditText) this.layout.findViewById(R.id.server_username)).getText().toString();
+        String password = ((EditText) this.layout.findViewById(R.id.server_password)).getText().toString();
         String color = Server.colors[this.selectedColorIndex];
 
         if (name.equals("")) {
-            Snackbar snackbar = Snackbar.make(this.view, "Name cannot be blank", Snackbar.LENGTH_SHORT);
+            Snackbar snackbar = Snackbar.make(this.layout, "Name cannot be blank", Snackbar.LENGTH_SHORT);
             snackbar.show();
             return false;
         }
@@ -286,7 +263,7 @@ public class CreateOrEditServerFragment extends Fragment {
         //this.realm.beginTransaction();
 
         message = message == null ? String.format(Locale.getDefault(), "Successfully saved %s", this.server.getName()) : message;
-        Snackbar snackbar = Snackbar.make(this.view, message, Snackbar.LENGTH_SHORT);
+        Snackbar snackbar = Snackbar.make(this.layout, message, Snackbar.LENGTH_SHORT);
         snackbar.show();
 
         return true;
@@ -333,12 +310,12 @@ public class CreateOrEditServerFragment extends Fragment {
     }
 
     public void testConnection() {
-        final String host = ((EditText) this.view.findViewById(R.id.server_host)).getText().toString();
-        final String mPort = ((EditText) this.view.findViewById(R.id.server_port)).getText().toString();
-        final String defaultDatabase = ((EditText) this.view.findViewById(R.id.server_default_db)).getText().toString();
+        final String host = ((EditText) this.layout.findViewById(R.id.server_host)).getText().toString();
+        final String mPort = ((EditText) this.layout.findViewById(R.id.server_port)).getText().toString();
+        final String defaultDatabase = ((EditText) this.layout.findViewById(R.id.server_default_db)).getText().toString();
 
-        final String user = ((EditText) this.view.findViewById(R.id.server_username)).getText().toString();
-        final String password = ((EditText) this.view.findViewById(R.id.server_password)).getText().toString();
+        final String user = ((EditText) this.layout.findViewById(R.id.server_username)).getText().toString();
+        final String password = ((EditText) this.layout.findViewById(R.id.server_password)).getText().toString();
 
         AsyncTask<String, Void, Boolean> testConnectionTask = new AsyncTask<String, Void, Boolean>() {
             private Exception exception;

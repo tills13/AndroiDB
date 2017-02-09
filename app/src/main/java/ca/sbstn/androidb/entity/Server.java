@@ -24,8 +24,7 @@ public class Server extends RealmObject {
             "#FF8A65"
     };
 
-    @PrimaryKey private int id;
-    @Required private String name;
+    @PrimaryKey private String name;
 
     @Required private String host;
     private int port;
@@ -50,8 +49,6 @@ public class Server extends RealmObject {
         this.defaultDatabase = defaultDatabase;
     }
 
-
-
     public String getColor() {
         return color;
     }
@@ -66,14 +63,6 @@ public class Server extends RealmObject {
 
     public void setHost(String host) {
         this.host = host;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getName() {

@@ -29,19 +29,15 @@ import java.util.Locale;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.callback.Callback;
-import ca.sbstn.androidb.database.RealmUtils;
 import ca.sbstn.androidb.entity.Server;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.task.ExecuteQueryTask;
 import io.realm.Realm;
 
-/**
- * Created by tills13 on 2015-11-22.
- */
 public class CreateOrEditDatabaseFragment extends Fragment {
     public static final String DATABASE_PARAM = "DATABASE";
-    public static final String SERVER_PARAM_ID = "SERVER_ID";
+    public static final String SERVER_PARAM_NAME = "SERVER_NAME";
     public static final int MODE_CREATE = 0;
     public static final int MODE_UPDATE = 1;
 
@@ -70,7 +66,7 @@ public class CreateOrEditDatabaseFragment extends Fragment {
         CreateOrEditDatabaseFragment fragment = new CreateOrEditDatabaseFragment();
 
         Bundle bundle = new Bundle();
-        bundle.putSerializable(SERVER_PARAM_ID, server.getId());
+        bundle.putSerializable(SERVER_PARAM_NAME, server.getName());
 
         fragment.setArguments(bundle);
         return fragment;
@@ -91,7 +87,7 @@ public class CreateOrEditDatabaseFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
-        this.realm = RealmUtils.getRealm(getContext());
+        this.realm = Realm.getDefaultInstance();
 
         if (this.getArguments() != null) {
             this.database = (Database) this.getArguments().getSerializable(DATABASE_PARAM);
@@ -107,8 +103,8 @@ public class CreateOrEditDatabaseFragment extends Fragment {
                 ((BaseActivity) getActivity()).setToolbarTitle(this.originalName);
             } else {
                 this.mode = MODE_CREATE;
-                int serverId = this.getArguments().getInt(SERVER_PARAM_ID);
-                this.server = this.realm.where(Server.class).equalTo("id", serverId).findFirst();
+                String serverName = this.getArguments().getString(SERVER_PARAM_NAME);
+                this.server = this.realm.where(Server.class).equalTo("name", serverName).findFirst();
                 this.database = new Database(this.server, "New Database", "postgres");
 
                 ((BaseActivity) getActivity()).setToolbarTitle("New Database");
