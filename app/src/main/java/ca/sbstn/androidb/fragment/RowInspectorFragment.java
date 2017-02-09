@@ -18,19 +18,12 @@ import java.util.List;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
-import ca.sbstn.androidb.callback.Callback;
-import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.Key;
 import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.sql.SQLUtils;
 import ca.sbstn.androidb.sql.Table;
-import ca.sbstn.androidb.task.ExecuteQueryTask;
-import ca.sbstn.androidb.task.FetchTableKeysTask;
 import ca.sbstn.androidb.view.SQLTableLayout;
 
-/**
- * Created by tills13 on 2015-11-24.
- */
 public class RowInspectorFragment extends Fragment {
     public static final String PARAM_ROW = "ROW";
 
@@ -80,6 +73,7 @@ public class RowInspectorFragment extends Fragment {
                 ((BaseActivity) getActivity()).setToolbarTitle("Row Inspector");
             }
         } else {
+            Log.d("Asdasd", "asdasd");
             // warn
         }
 
@@ -115,7 +109,7 @@ public class RowInspectorFragment extends Fragment {
         Table table = this.row.getDataSet().getTable();
 
         if (table != null) {
-            FetchTableKeysTask fetchTableKeysTask = new FetchTableKeysTask(getContext(), new SQLExecuteCallback() {
+            /*FetchTableKeysTask fetchTableKeysTask = new FetchTableKeysTask(getContext(), new SQLExecuteCallback() {
                 @Override
                 public void onResult(List<SQLDataSet> results) {
 
@@ -129,7 +123,7 @@ public class RowInspectorFragment extends Fragment {
                 }
             });
 
-            fetchTableKeysTask.execute(table);
+            fetchTableKeysTask.execute(table);*/
         } else {
             this.showPrimaryKeys();
             this.showForeignKeys();
@@ -160,7 +154,7 @@ public class RowInspectorFragment extends Fragment {
             ProgressBar loadingBar = new ProgressBar(getContext(), null, android.R.attr.progressBarStyleHorizontal);
             this.columnsContainer.addView(loadingBar);
 
-            ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
+            /*ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                 @Override
                 public void onResult(SQLDataSet result) {
                     buildColumns(result.getRow(0));
@@ -170,7 +164,7 @@ public class RowInspectorFragment extends Fragment {
 
             executeQueryTask.setExpectResults(true);
             executeQueryTask.setProgressBar(loadingBar);
-            executeQueryTask.execute(query);
+            executeQueryTask.execute(query);*/
         }
     }
 
@@ -264,7 +258,7 @@ public class RowInspectorFragment extends Fragment {
             query = String.format(query, refTable, refColumnName, this.row.getString(fkeyColumnName));
 
 
-            ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
+            /*ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                 @Override
                 public void onResult(SQLDataSet result) {
                     tableLayout.setData(result);
@@ -273,7 +267,7 @@ public class RowInspectorFragment extends Fragment {
 
             executeQueryTask.setExpectResults(true);
             executeQueryTask.setProgressBar(loadingBar);
-            executeQueryTask.execute(query);
+            executeQueryTask.execute(query);*/
         }
     }
 }

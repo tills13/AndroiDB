@@ -13,8 +13,20 @@
         WHERE pgd.datAllowConn ORDER BY pgd.datName;
     </string>
 
-
-
+    <string name="db_query_fetch_database">
+        SELECT
+            pgd.datname AS name,
+            pgsh.description AS comment,
+            pg_catalog.pg_get_userbyid(pgd.datdba) AS owner,
+            pgd.datistemplate AS is_template,
+            pgts.spcname AS tablespace_name
+        FROM pg_database pgd
+        LEFT JOIN pg_shdescription pgsh on pgd.oid = pgsh.objoid
+        LEFT JOIN pg_tablespace pgts on pgd.dattablespace = pgts.oid
+        WHERE pgd.datAllowConn
+        AND pgd.datname = \'%s\'
+        ORDER BY pgd.datName;
+    </string>
 
     <string name="db_query_foreign_keys" formatted="false">
         SELECT

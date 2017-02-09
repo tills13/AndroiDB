@@ -12,14 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.entity.Server;
+import ca.sbstn.androidb.sql.Server;
 
-/**
- * Created by tills13 on 15-06-26.
- */
 public class ServerListAdapter extends BaseAdapter {
-    public Context context;
-    public List<Server> servers;
+    private Context context;
+    private List<Server> servers;
 
     public ServerListAdapter(Context context) {
         super();

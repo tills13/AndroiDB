@@ -9,7 +9,7 @@
     <string name="title_activity_row_inspector">RowInspectorActivity</string>
     <string name="title_activity_edit_table">EditTableActivity</string>
 
-    <string name="activity_servers_no_servers">You have no SQL servers saved, use the overflow menu to add a new server.</string>
+    <string name="activity_servers_no_servers">You have no servers saved, use the overflow menu to add a new server.</string>
 
     <string name="action_sort">Sort</string>
     <string name="action_show">Show</string>

@@ -1,11 +1,8 @@
 package ca.sbstn.androidb.fragment;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -18,54 +15,51 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
-import ca.sbstn.androidb.application.AndroiDB;
-import ca.sbstn.androidb.database.RealmUtils;
-import ca.sbstn.androidb.entity.Server;
+import ca.sbstn.androidb.query.QueryExecutor;
+import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.util.Utils;
 import io.realm.Realm;
+import io.realm.exceptions.RealmPrimaryKeyConstraintException;
 
-/**
- * Created by tills13 on 2015-11-23.
- */
 public class CreateOrEditServerFragment extends Fragment {
-    public static final String PARAM_SERVER_ID = "SERVER_ID";
+    public static final String TAG = "COrEServerFragment";
+    public static final String PARAM_SERVER_NAME = "SERVER_NAME";
 
-    private Server server;
-    private View view;
+    private View layout;
     private int selectedColorIndex;
+    private Server server;
 
     protected GridLayout colorChooser;
     protected EditText nameEditText;
     protected EditText hostEditText;
     protected EditText portEditText;
+    protected EditText defaultDatabaseEditText;
     protected EditText usernameEditText;
     protected EditText passwordEditText;
 
-    protected SharedPreferences sharedPreferences;
     protected Realm realm;
 
-    public CreateOrEditServerFragment() {}
+    public CreateOrEditServerFragment() {
+    }
 
     public static CreateOrEditServerFragment newInstance(@Nullable Server server) {
         CreateOrEditServerFragment createOrEditServerFragment = new CreateOrEditServerFragment();
 
         if (server != null) {
             Bundle bundle = new Bundle();
-            bundle.putSerializable(PARAM_SERVER_ID, server.getId());
+            bundle.putSerializable(PARAM_SERVER_NAME, server.getName());
 
             createOrEditServerFragment.setArguments(bundle);
         }
@@ -78,18 +72,11 @@ public class CreateOrEditServerFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
-        this.sharedPreferences = getActivity().getSharedPreferences(AndroiDB.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
-        this.realm = RealmUtils.getRealm(getContext());
-        this.realm.beginTransaction();
+        this.realm = Realm.getDefaultInstance();
 
         if (this.getArguments() != null) {
-            int serverId = this.getArguments().getInt(PARAM_SERVER_ID);
-            this.server = this.realm.where(Server.class).equalTo("id", serverId).findFirst();
-        } else {
-            int nextKey = this.realm.where(Server.class).max("id").intValue() + 1;
-            this.server = new Server();
-            this.server.setId(nextKey);
-            this.server = this.realm.copyToRealm(this.server);
+            String serverName = this.getArguments().getString(PARAM_SERVER_NAME);
+            this.server = this.realm.where(Server.class).equalTo("name", serverName).findFirst();
         }
     }
 
@@ -103,30 +90,28 @@ public class CreateOrEditServerFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        this.realm.cancelTransaction();
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.view = inflater.inflate(R.layout.create_edit_server, null);
+        this.layout = inflater.inflate(R.layout.create_edit_server, null);
 
-        this.colorChooser = (GridLayout) this.view.findViewById(R.id.colors);
-        this.nameEditText = (EditText) this.view.findViewById(R.id.server_name);
-        this.hostEditText = (EditText) this.view.findViewById(R.id.server_host);
-        this.portEditText = (EditText) this.view.findViewById(R.id.server_port);
-        this.usernameEditText = (EditText) this.view.findViewById(R.id.server_username);
-        this.passwordEditText = (EditText) this.view.findViewById(R.id.server_password);
+        this.colorChooser = (GridLayout) this.layout.findViewById(R.id.colors);
+        this.nameEditText = (EditText) this.layout.findViewById(R.id.server_name);
+        this.hostEditText = (EditText) this.layout.findViewById(R.id.server_host);
+        this.portEditText = (EditText) this.layout.findViewById(R.id.server_port);
+        this.defaultDatabaseEditText = (EditText) this.layout.findViewById(R.id.server_default_db);
+        this.usernameEditText = (EditText) this.layout.findViewById(R.id.server_username);
+        this.passwordEditText = (EditText) this.layout.findViewById(R.id.server_password);
 
         this.nameEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
             }
 
             @Override
@@ -136,21 +121,21 @@ public class CreateOrEditServerFragment extends Fragment {
             }
         });
 
-        ((Button) this.view.findViewById(R.id.save)).setOnClickListener(new View.OnClickListener() {
+        this.layout.findViewById(R.id.save).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 saveServer(null);
             }
         });
 
-        ((Button) this.view.findViewById(R.id.test)).setOnClickListener(new View.OnClickListener() {
+        this.layout.findViewById(R.id.test).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 testConnection();
             }
         });
 
-        return this.view;
+        return this.layout;
     }
 
     @Override
@@ -186,9 +171,7 @@ public class CreateOrEditServerFragment extends Fragment {
 
             case R.id.action_done: {
                 if (this.saveServer(null)) {
-                    this.realm.commitTransaction();
-
-                    getActivity().getSupportFragmentManager().popBackStack();
+                    getActivity().getSupportFragmentManager().popBackStackImmediate();
                     getActivity().getSupportFragmentManager().findFragmentById(R.id.context_fragment).onResume();
                 }
 
@@ -196,7 +179,6 @@ public class CreateOrEditServerFragment extends Fragment {
             }
 
             case android.R.id.home: {
-                this.realm.cancelTransaction();
                 getActivity().getSupportFragmentManager().popBackStack();
             }
         }
@@ -205,21 +187,26 @@ public class CreateOrEditServerFragment extends Fragment {
     }
 
     public void refresh() {
-        this.nameEditText.setText(this.server.getName());
-        this.hostEditText.setText(this.server.getHost());
-        this.portEditText.setText(String.format(Locale.ENGLISH, "%d", this.server.getPort()));
-        this.usernameEditText.setText(this.server.getUsername());
-        this.passwordEditText.setText(this.server.getPassword());
+        if (this.server != null) {
+            this.nameEditText.setText(this.server.getName());
+            this.nameEditText.setEnabled(false);
+            this.hostEditText.setText(this.server.getHost());
+            this.portEditText.setText(String.format(Locale.ENGLISH, "%d", this.server.getPort()));
+            this.defaultDatabaseEditText.setText(this.server.getDefaultDatabase());
+            this.usernameEditText.setText(this.server.getUsername());
+            this.passwordEditText.setText(this.server.getPassword());
 
-        if (this.server.getColor() == null || this.server.getColor().equals("")) {
-            this.selectedColorIndex = new Random().nextInt(Server.colors.length);
+            if (this.server.getColor() == null || this.server.getColor().equals("")) {
+                this.selectedColorIndex = new Random().nextInt(Server.colors.length);
+            } else {
+                this.selectedColorIndex = Arrays.asList(Server.colors).indexOf(this.server.getColor());
+            }
         } else {
-            this.selectedColorIndex = Arrays.asList(Server.colors).indexOf(server.getColor());
+            this.selectedColorIndex = new Random().nextInt(Server.colors.length);
         }
 
         this.refreshColorChooser();
     }
-
 
     public void refreshColorChooser() {
         this.colorChooser.removeAllViews();
@@ -252,29 +239,35 @@ public class CreateOrEditServerFragment extends Fragment {
             this.colorChooser.addView(layout);
         }
 
-        ((HorizontalScrollView) this.colorChooser.getParent()).smoothScrollTo((int) Utils.dpToPixels(getResources(), 48) * selectedColorIndex, 0);
+        ((HorizontalScrollView) this.colorChooser.getParent())
+                .smoothScrollTo((int) Utils.dpToPixels(getResources(), 48) * selectedColorIndex, 0);
     }
 
     public boolean saveServer(String message) {
-        String name = ((EditText) this.view.findViewById(R.id.server_name)).getText().toString();
-        String host = ((EditText) this.view.findViewById(R.id.server_host)).getText().toString();
-        String mPort = ((EditText) this.view.findViewById(R.id.server_port)).getText().toString();
-        String defaultDatabase = ((EditText) this.view.findViewById(R.id.server_default_db)).getText().toString();
-        String user = ((EditText) this.view.findViewById(R.id.server_username)).getText().toString();
-        String password = ((EditText) this.view.findViewById(R.id.server_password)).getText().toString();
+        String name = this.nameEditText.getText().toString();
+        String host = this.hostEditText.getText().toString();
+        String mPort = this.portEditText.getText().toString();
+        String defaultDatabase = this.defaultDatabaseEditText.getText().toString();
+        String user = ((EditText) this.layout.findViewById(R.id.server_username)).getText().toString();
+        String password = ((EditText) this.layout.findViewById(R.id.server_password)).getText().toString();
         String color = Server.colors[this.selectedColorIndex];
 
         if (name.equals("")) {
-            Snackbar snackbar = Snackbar.make(this.view, "Name cannot be blank", Snackbar.LENGTH_SHORT);
+            Snackbar snackbar = Snackbar.make(this.layout, "Name cannot be blank", Snackbar.LENGTH_SHORT);
             snackbar.show();
             return false;
         }
 
-        defaultDatabase = (defaultDatabase.equals("") ? "postgres" : defaultDatabase);
-        int port = (mPort.equals("") ? 5432 : Integer.parseInt(mPort));
+        defaultDatabase = defaultDatabase.equals("") ? "postgres" : defaultDatabase;
+        int port = mPort.equals("") ? 5432 : Integer.parseInt(mPort);
         user = user.equals("") ? "postgres" : user;
 
-        this.server.setName(name);
+        this.realm.beginTransaction();
+
+        if (this.server == null) {
+            this.server = this.realm.createObject(Server.class, name);
+        }
+
         this.server.setHost(host);
         this.server.setPort(port);
         this.server.setDefaultDatabase(defaultDatabase);
@@ -283,10 +276,12 @@ public class CreateOrEditServerFragment extends Fragment {
         this.server.setColor(color);
 
         this.realm.commitTransaction();
-        //this.realm.beginTransaction();
 
-        message = message == null ? String.format(Locale.getDefault(), "Successfully saved %s", this.server.getName()) : message;
-        Snackbar snackbar = Snackbar.make(this.view, message, Snackbar.LENGTH_SHORT);
+        message = message == null ?
+            String.format(Locale.getDefault(), "Successfully saved %s", server.getName()) :
+            message;
+
+        Snackbar snackbar = Snackbar.make(this.layout, message, Snackbar.LENGTH_SHORT);
         snackbar.show();
 
         return true;
@@ -298,10 +293,11 @@ public class CreateOrEditServerFragment extends Fragment {
             .setPositiveButton("yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
+                    realm.beginTransaction();
                     server.deleteFromRealm();
                     realm.commitTransaction();
 
-                    getActivity().getSupportFragmentManager().popBackStack();
+                    getActivity().getSupportFragmentManager().popBackStackImmediate();
                     getActivity().getSupportFragmentManager().findFragmentById(R.id.context_fragment).onResume();
                 }
             })
@@ -310,63 +306,86 @@ public class CreateOrEditServerFragment extends Fragment {
     }
 
     public void cloneServer() {
-        if (this.server == null) return;
+        if (this.server == null) {
+            return;
+        }
 
         new AlertDialog.Builder(getContext())
-            .setMessage("Are you sure you want to clone this server?")
-            .setPositiveButton("yes", new DialogInterface.OnClickListener() {
+            .setView(R.layout.clone_server_dialog)
+            .setTitle("New server name")
+            .setPositiveButton("continue", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    //selectedColorIndex = new Random().nextInt(Server.colors.length - 1);
+                    EditText editText = ((EditText)((AlertDialog) dialogInterface).findViewById(R.id.new_server_name));
+                    String name = editText.getText().toString();
+                    selectedColorIndex = new Random().nextInt(Server.colors.length - 1);
 
-                    //String originalName = server.getName();
+                    realm.beginTransaction();
 
-                    //server.setName("New Server");
-                    //server.setColor(Server.colors[selectedColorIndex]);
-                    //refresh();
+                    try {
+                        Server newServer = realm.createObject(Server.class, name);
 
-                    //saveServer(String.format(Locale.getDefault(), "Successfully cloned %s", originalName));
+                        newServer.setHost(server.getHost());
+                        newServer.setPort(server.getPort());
+                        newServer.setDefaultDatabase(server.getDefaultDatabase());
+                        newServer.setUsername(server.getUsername());
+                        newServer.setPassword(server.getPassword());
+                        newServer.setColor(Server.colors[selectedColorIndex]);
+
+                        realm.commitTransaction();
+
+                        saveServer(String.format(Locale.getDefault(), "Successfully cloned %s into %s", server.getName(), name));
+
+                        server = newServer;
+                    } catch (RealmPrimaryKeyConstraintException e) {
+                        String message = "A server by that name already exists...";
+                        Snackbar snackbar = Snackbar.make(layout, message, Snackbar.LENGTH_SHORT);
+                        snackbar.show();
+
+                        realm.cancelTransaction();
+                    } finally {
+                        refresh();
+                    }
                 }
             })
-            .setNegativeButton("no", null)
+            .setNegativeButton("cancel", null)
             .create().show();
     }
 
     public void testConnection() {
-        final String host = ((EditText) this.view.findViewById(R.id.server_host)).getText().toString();
-        final String mPort = ((EditText) this.view.findViewById(R.id.server_port)).getText().toString();
-        final String defaultDatabase = ((EditText) this.view.findViewById(R.id.server_default_db)).getText().toString();
+        final String host = this.hostEditText.getText().toString();
+        final String port = this.portEditText.getText().toString();
+        final String defaultDatabase = this.defaultDatabaseEditText.getText().toString();
 
-        final String user = ((EditText) this.view.findViewById(R.id.server_username)).getText().toString();
-        final String password = ((EditText) this.view.findViewById(R.id.server_password)).getText().toString();
+        final String user = this.usernameEditText.getText().toString();
+        final String password = this.passwordEditText.getText().toString();
 
-        AsyncTask<String, Void, Boolean> testConnectionTask = new AsyncTask<String, Void, Boolean>() {
-            private Exception exception;
+        QueryExecutor executor = QueryExecutor.forServer(host, Integer.parseInt(port), defaultDatabase, user, password);
+        executor.execute("", new TestConnectionCallback());
+    }
 
-            @Override
-            protected Boolean doInBackground(String... params) {
-                try {
-                    String url = String.format("jdbc:postgresql://%s:%s/%s", host, mPort, defaultDatabase.equals("") ? "postgres" : defaultDatabase);
-                    Connection connection = DriverManager.getConnection(url, user, password);
-                    connection.close();
-                } catch (Exception e) {
-                    this.exception = e;
-                    return false;
-                }
+    private class TestConnectionCallback implements QueryExecutor.Callback<Boolean> {
+        private Exception exception;
 
-                return true;
-            }
+        @Override
+        public Boolean onError(Exception exception) {
+            this.exception = exception;
+            return false;
+        }
 
-            @Override
-            protected void onPostExecute(Boolean result) {
-                super.onPostExecute(result);
+        @Override
+        public Boolean onResultAsync(ResultSet result) {
+            return true;
+        }
 
-                String message = result ? "Successfully connected" : "Connection failed: " + this.exception.getMessage();
+        @Override
+        public void onResultSync(Boolean success) {
+            String message = success ? "Successfully connected" : "Connection failed: " + this.exception.getMessage();
 
-                (new AlertDialog.Builder(getActivity())).setTitle(result ? "Success" : "Failed").setMessage(message).setPositiveButton("ok", null).show();
-            }
-        };
-
-        testConnectionTask.execute("");
+            (new AlertDialog.Builder(getActivity()))
+                .setTitle(success ? "Success" : "Failed")
+                .setMessage(message)
+                .setPositiveButton("ok", null).show();
+        }
     }
 }

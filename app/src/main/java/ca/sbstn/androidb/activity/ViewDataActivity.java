@@ -1,29 +1,21 @@
 package ca.sbstn.androidb.activity;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
-import java.sql.SQLException;
-import java.util.Locale;
-
 import ca.sbstn.androidb.R;
-import ca.sbstn.androidb.callback.Callback;
-import ca.sbstn.androidb.fragment.ViewDataFragment;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.sql.SQLDataSet;
+import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.sql.Table;
-import ca.sbstn.androidb.task.ExecuteQueryTask;
+import io.realm.Realm;
 
-/**
- * Created by tyler on 24/04/16.
- */
 public class ViewDataActivity extends BaseActivity {
-    public static final String DATABASE_PARAM = "DATABASE";
-    public static final String TABLE_PARAM = "TABLE";
-    public static final String QUERY_PARAM = "QUERY";
+    public static final String PARAM_SERVER_NAME = "SERVER_NAME";
+    public static final String PARAM_DATABASE = "DATABASE";
+    public static final String PARAM_TABLE = "TABLE";
+    public static final String PARAM_QUERY = "QUERY";
 
+    protected Server server;
     protected Table table;
     protected Database database;
     protected String query;
@@ -34,16 +26,20 @@ public class ViewDataActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
+        Realm realm = Realm.getDefaultInstance();
+        String name = intent.getStringExtra(PARAM_SERVER_NAME);
 
-        if (intent.hasExtra(TABLE_PARAM)) {
-            this.table = (Table) intent.getSerializableExtra(TABLE_PARAM);
+        this.server = realm.where(Server.class).equalTo("name", name).findFirst();
+
+        if (intent.hasExtra(PARAM_TABLE)) {
+            this.table = (Table) intent.getSerializableExtra(PARAM_TABLE);
             this.database = this.table.getDatabase();
 
             this.setToolbarTitle(this.table.getName());
             this.setToolbarSubtitle(this.database.getName());
-        } else if (intent.hasExtra(QUERY_PARAM)) {
-            this.query = intent.getStringExtra(QUERY_PARAM);
-            this.database = (Database) intent.getSerializableExtra(DATABASE_PARAM);
+        } else if (intent.hasExtra(PARAM_QUERY)) {
+            this.query = intent.getStringExtra(PARAM_QUERY);
+            this.database = (Database) intent.getSerializableExtra(PARAM_DATABASE);
 
             this.toolbar.setTitle("Custom Query");
             this.toolbar.setSubtitle(this.query);
@@ -51,7 +47,7 @@ public class ViewDataActivity extends BaseActivity {
             finish();
         }
 
-        this.setToolbarColor(this.database.getServer().getColor(), true);
+        this.setToolbarColor(this.server.getColor(), true);
         this.init();
     }
 
@@ -59,7 +55,7 @@ public class ViewDataActivity extends BaseActivity {
         String query = this.table == null ? this.query : this.table.getQuery();
         Database database = this.table == null ? this.database : this.table.getDatabase();
 
-        ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(database, this.table, this, new Callback<SQLDataSet>() {
+        /*ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(database, this.table, this, new Callback<SQLDataSet>() {
             @Override
             public void onResult(SQLDataSet result) {
                 if (this.getTask().hasException()) {
@@ -86,6 +82,6 @@ public class ViewDataActivity extends BaseActivity {
         });
 
         executeQueryTask.setExpectResults(true);
-        executeQueryTask.execute(query);
+        executeQueryTask.execute(query);*/
     }
 }

@@ -19,19 +19,11 @@ import java.util.List;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.MainActivity;
 import ca.sbstn.androidb.adapter.ServerListAdapter;
-import ca.sbstn.androidb.database.RealmUtils;
-import ca.sbstn.androidb.entity.Server;
+import ca.sbstn.androidb.sql.Server;
 import io.realm.Realm;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ServerListFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ServerListFragment extends Fragment {
-    private List<Server> servers;
     private OnServerSelectedListener mListener;
-    private ListView listView;
     private ServerListAdapter adapter;
 
     public ServerListFragment() {}
@@ -82,17 +74,17 @@ public class ServerListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.server_list, null);
 
-        this.listView = (ListView) view.findViewById(R.id.list);
-        this.listView.setAdapter(this.adapter);
+        ListView listView = (ListView) view.findViewById(R.id.list);
+        listView.setAdapter(this.adapter);
 
-        this.listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 mListener.onServerSelected((Server) adapter.getItem(i));
             }
         });
 
-        this.listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                 ServerListAdapter serverListAdapter = (ServerListAdapter) adapterView.getAdapter();
@@ -105,7 +97,7 @@ public class ServerListFragment extends Fragment {
             }
         });
 
-        this.listView.setEmptyView(view.findViewById(R.id.no_servers_warning));
+        listView.setEmptyView(view.findViewById(R.id.no_servers_warning));
 
         return view;
     }
@@ -134,13 +126,13 @@ public class ServerListFragment extends Fragment {
     public void update() {
         if (this.adapter == null) return;
 
-        Realm realm = RealmUtils.getRealm(getContext());
-        List<ca.sbstn.androidb.entity.Server> servers = realm.where(Server.class).findAll();
+        Realm realm = Realm.getDefaultInstance();
+        List<Server> servers = realm.where(Server.class).findAll();
         this.adapter.setServers(servers);
         this.adapter.notifyDataSetChanged();
     }
 
     public interface OnServerSelectedListener {
-        public void onServerSelected(Server server);
+        void onServerSelected(Server server);
     }
 }

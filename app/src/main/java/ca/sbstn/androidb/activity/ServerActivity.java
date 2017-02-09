@@ -1,37 +1,21 @@
 package ca.sbstn.androidb.activity;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.lang.reflect.Type;
-import java.util.Map;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.fragment.CreateOrEditDatabaseFragment;
 import ca.sbstn.androidb.fragment.CreateOrEditServerFragment;
 import ca.sbstn.androidb.fragment.DatabaseListFragment;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.entity.Server;
+import ca.sbstn.androidb.sql.Server;
+import io.realm.Realm;
 
-/**
- * Created by tyler on 21/04/16.
- */
 public class ServerActivity extends BaseActivity implements DatabaseListFragment.OnDatabaseSelectedListener {
-    public static final String SERVER_PARAM_ID = "SERVER_ID";
+    public static final String SERVER_PARAM_NAME = "PARAM_NAME";
     protected Server server;
 
     @Override
@@ -39,6 +23,10 @@ public class ServerActivity extends BaseActivity implements DatabaseListFragment
         setContentView(R.layout.layout_main);
         super.onCreate(savedInstanceState);
 
+        Realm realm = Realm.getDefaultInstance();
+        String serverName = getIntent().getStringExtra(SERVER_PARAM_NAME);
+
+        this.server = realm.where(Server.class).equalTo("name", serverName).findFirst();
         this.setToolbarColor(this.server.getColor(), true);
 
         DatabaseListFragment databaseListFragment = DatabaseListFragment.newInstance(this.server);
@@ -47,7 +35,7 @@ public class ServerActivity extends BaseActivity implements DatabaseListFragment
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(SERVER_PARAM_ID, this.server.getId());
+        outState.putSerializable(SERVER_PARAM_NAME, this.server.getName());
 
         super.onSaveInstanceState(outState);
     }
@@ -81,26 +69,14 @@ public class ServerActivity extends BaseActivity implements DatabaseListFragment
     }
 
     public Server getServer(boolean reload) {
-        if (reload) {
-            Map<String, Server> servers = this.getServers();
-            this.server = servers.get(this.server.getId());
-        }
-
         return this.server;
-    }
-
-    public Map<String, Server> getServers() {
-        Gson gson = new Gson();
-        String serverJson = this.sharedPreferences.getString(ca.sbstn.androidb.application.AndroiDB.PREFERENCES_KEY_SERVERS, "{}");
-
-        Type serverListType = new TypeToken<Map<String,Server>>(){}.getType();
-        return gson.fromJson(serverJson, serverListType);
     }
 
     @Override
     public void onDatabaseSelected(Database database) {
         Intent intent = new Intent(this, DatabaseActivity.class);
-        intent.putExtra(DatabaseActivity.DATABASE_PARAM, database);
+        intent.putExtra(DatabaseActivity.SERVER_PARAM_NAME, this.server.getName());
+        intent.putExtra(DatabaseActivity.DATABASE_PARAM, database.getName());
         startActivity(intent);
     }
 

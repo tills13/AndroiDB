@@ -37,7 +37,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -69,13 +68,15 @@
                     android:paddingEnd="16dp"
                     style="@style/AndroiDB.Label"
                     android:text="@string/server_name" />
-                <EditText android:id="@+id/server_name"
+                <EditText
+                    android:id="@+id/server_name"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/edit_text_height"
                     android:hint="@string/prompt_name"
                     android:inputType="text"
                     android:layout_weight="1"
-                    android:singleLine="true" />
+                    android:textColor="@color/white"
+                    android:maxLines="1" />
             </LinearLayout>
 
             <LinearLayout
@@ -99,7 +100,8 @@
                     android:layout_weight="1"
                     android:hint="@string/prompt_host"
                     android:inputType="text"
-                    android:singleLine="true" />
+                    android:textColor="@color/white"
+                    android:maxLines="1" />
             </LinearLayout>
 
             <LinearLayout
@@ -122,7 +124,8 @@
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_port"
                     android:inputType="number"
-                    android:singleLine="true"
+                    android:textColor="@color/white"
+                    android:maxLines="1"
                     android:layout_weight="3"/>
             </LinearLayout>
 
@@ -146,8 +149,8 @@
                     android:layout_height="@dimen/edit_text_height"
                     android:hint="@string/prompt_default_db"
                     android:inputType="text"
-                    android:maxLines="1"
-                    android:singleLine="true" />
+                    android:textColor="@color/white"
+                    android:maxLines="1"/>
             </LinearLayout>
 
             <TextView
@@ -178,7 +181,8 @@
                     android:layout_weight="1"
                     android:hint="@string/prompt_username"
                     android:inputType="text"
-                    android:singleLine="true" />
+                    android:textColor="@color/white"
+                    android:maxLines="1" />
             </LinearLayout>
 
             <LinearLayout
@@ -202,8 +206,8 @@
                     android:layout_weight="1"
                     android:hint="@string/prompt_password"
                     android:inputType="textPassword"
-                    android:maxLines="1"
-                    android:singleLine="true" />
+                    android:textColor="@color/white"
+                    android:maxLines="1"/>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

@@ -129,8 +129,8 @@ public class QueryRunnerFragment extends Fragment {
         ((View) statusField.getParent()).setVisibility(View.GONE);
 
         Intent intent = new Intent(getContext(), ViewDataActivity.class);
-        intent.putExtra(ViewDataActivity.QUERY_PARAM, query);
-        intent.putExtra(ViewDataActivity.DATABASE_PARAM, this.database);
+        intent.putExtra(ViewDataActivity.PARAM_QUERY, query);
+        intent.putExtra(ViewDataActivity.PARAM_DATABASE, this.database);
         startActivity(intent);
     }
 

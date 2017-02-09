@@ -1,8 +1,7 @@
 package ca.sbstn.androidb.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.util.Log;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,8 +51,16 @@ public class DatabaseListAdapter extends BaseAdapter {
             ((TextView) convertView.findViewById(R.id.database_comment)).setText(database.getComment());
         }
 
-        if (position % 2 == 0) convertView.setBackgroundColor(Color.argb((int) Math.floor(0.05 * 255), 255, 255, 255));
-        //else convertView.setBackgroundColor(colorOdd);
+        int colorEven, colorOdd;
+        if (Build.VERSION.SDK_INT >= 23) {
+            colorEven = this.context.getColor(R.color.table_row_even);
+            colorOdd = this.context.getColor(R.color.table_row_odd);
+        } else {
+            colorEven = this.context.getResources().getColor(R.color.table_row_even);
+            colorOdd = this.context.getResources().getColor(R.color.table_row_odd);
+        }
+
+        convertView.setBackgroundColor(position % 2 == 0 ? colorEven : colorOdd);
 
         return convertView;
     }

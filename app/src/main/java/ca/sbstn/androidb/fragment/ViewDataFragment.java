@@ -11,22 +11,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import java.util.List;
-
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
-import ca.sbstn.androidb.callback.Callback;
-import ca.sbstn.androidb.callback.SQLExecuteCallback;
 import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.sql.Table;
-import ca.sbstn.androidb.task.ExecuteQueryTask;
 import ca.sbstn.androidb.view.SQLTableLayout;
 
-/**
- * Created by tills13 on 2015-11-23.
- */
 public class ViewDataFragment extends Fragment {
-    public static final String PARAM_SQLRESULT = "sqlResult";
+    public static final String PARAM_SQLRESULT = "SQL_RESULT";
+    public static final String PARAM_SERVER_NAME = "SERVER_NAME";
 
     private SQLDataSet sqlDataSet;
     private SQLTableLayout sqlTableLayout;
@@ -91,7 +84,7 @@ public class ViewDataFragment extends Fragment {
         this.sqlTableLayout = (SQLTableLayout) view.findViewById(R.id.sql_table_layout);
 
         if (this.sqlDataSet.getTable() != null) {
-            this.sqlTableLayout.setStickyHeaderColor(this.sqlDataSet.getTable().getDatabase().getServer().getColor());
+            //this.sqlTableLayout.setStickyHeaderColor(this.sqlDataSet.getTable().getDatabase().getServer().getColor());
         }
 
         this.sqlTableLayout.setData(sqlDataSet);
@@ -111,7 +104,7 @@ public class ViewDataFragment extends Fragment {
                 if (table.getOrderBy() == index) table.toggleOrderByDirection();
                 else table.setOrderBy(index);
 
-                ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
+                /*ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                     @Override
                     public void onResult(SQLDataSet result) {
                         sqlTableLayout.setData(result);
@@ -119,7 +112,7 @@ public class ViewDataFragment extends Fragment {
                 });
 
                 executeQueryTask.setExpectResults(true);
-                executeQueryTask.execute(table.getQuery());
+                executeQueryTask.execute(table.getQuery());*/
             }
         });
 
@@ -133,7 +126,7 @@ public class ViewDataFragment extends Fragment {
                     Table table = sqlDataSet.getTable();
                     table.next();
 
-                    ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
+                    /*ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                         @Override
                         public void onResult(SQLDataSet result) {
                             sqlTableLayout.setData(result);
@@ -141,7 +134,7 @@ public class ViewDataFragment extends Fragment {
                     });
 
                     executeQueryTask.setExpectResults(true);
-                    executeQueryTask.execute(table.getQuery());
+                    executeQueryTask.execute(table.getQuery());*/
                 }
             });
 
@@ -151,7 +144,7 @@ public class ViewDataFragment extends Fragment {
                     Table table = sqlDataSet.getTable();
                     table.previous();
 
-                    ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
+                    /*ExecuteQueryTask executeQueryTask = new ExecuteQueryTask(table.getDatabase(), table, getContext(), new Callback<SQLDataSet>() {
                         @Override
                         public void onResult(SQLDataSet result) {
                             sqlTableLayout.setData(result);
@@ -159,7 +152,7 @@ public class ViewDataFragment extends Fragment {
                     });
 
                     executeQueryTask.setExpectResults(true);
-                    executeQueryTask.execute(table.getQuery());
+                    executeQueryTask.execute(table.getQuery());*/
                 }
             });
         } else {

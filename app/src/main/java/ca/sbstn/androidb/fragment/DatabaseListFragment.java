@@ -1,13 +1,14 @@
 package ca.sbstn.androidb.fragment;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,22 +21,24 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.activity.ServerActivity;
 import ca.sbstn.androidb.adapter.DatabaseListAdapter;
-import ca.sbstn.androidb.callback.Callback;
-import ca.sbstn.androidb.database.RealmUtils;
-import ca.sbstn.androidb.entity.Server;
+import ca.sbstn.androidb.query.QueryExecutor;
 import ca.sbstn.androidb.sql.Database;
-import ca.sbstn.androidb.task.FetchDatabasesTask;
+import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.util.Colours;
 import io.realm.Realm;
 
 public class DatabaseListFragment extends Fragment {
-    public static final String SERVER_PARAM_ID = "SERVER_ID";
+    public static final String TAG = "DatabaseListFragment";
+    public static final String SERVER_PARAM_NAME = "PARAM_NAME";
 
     private Server server;
 
@@ -46,8 +49,6 @@ public class DatabaseListFragment extends Fragment {
     private DatabaseListAdapter adapter;
     private LinearLayout connectionInfo;
 
-    //private FetchDatabasesTask fetchDatabasesTask;
-
     protected OnDatabaseSelectedListener mListener;
     protected Realm realm;
 
@@ -57,7 +58,7 @@ public class DatabaseListFragment extends Fragment {
         DatabaseListFragment fragment = new DatabaseListFragment();
 
         Bundle bundle = new Bundle();
-        bundle.putSerializable(SERVER_PARAM_ID, server.getId());
+        bundle.putSerializable(SERVER_PARAM_NAME, server.getName());
 
         fragment.setArguments(bundle);
         return fragment;
@@ -73,11 +74,12 @@ public class DatabaseListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
-        this.realm = RealmUtils.getRealm(getContext());
+        this.realm = Realm.getDefaultInstance();
 
         if (getArguments() != null) {
-            int serverId = getArguments().getInt(SERVER_PARAM_ID);
-            this.server = this.realm.where(Server.class).equalTo("id", serverId).findFirst();
+            String serverName = getArguments().getString(SERVER_PARAM_NAME);
+
+            this.server = this.realm.where(Server.class).equalTo("name", serverName).findFirst();
             this.adapter = new DatabaseListAdapter(getActivity());
         }
     }
@@ -85,14 +87,15 @@ public class DatabaseListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+
         this.refresh(false);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
-        inflater.inflate(R.menu.menu_server, menu);
 
+        inflater.inflate(R.menu.menu_server, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -115,11 +118,7 @@ public class DatabaseListFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        try {
-            this.mListener = (OnDatabaseSelectedListener) context;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement OnDatabaseSelectedListener");
-        }
+        this.mListener = (OnDatabaseSelectedListener) context;
     }
 
     @Override
@@ -195,29 +194,64 @@ public class DatabaseListFragment extends Fragment {
         ((TextView) this.internalView.findViewById(R.id.connected_as_info))
             .setText(String.format("Connected as %s", this.server.getUsername()));
 
-        FetchDatabasesTask fetchDatabasesTask = new FetchDatabasesTask(this.getContext(), new Callback<List<Database>>() {
+        String query = this.getResources().getString(R.string.db_query_fetch_databases);
+
+        QueryExecutor executor = QueryExecutor.forServer(this.server);
+
+        executor.execute(query, new QueryExecutor.Callback<List<Database>>() {
+            private Exception exception;
+
             @Override
-            public void onResult(List<Database> result) {
-                if (this.getTask().hasException()) {
-                    Exception e = this.getTask().getException();
-                    new AlertDialog.Builder(getContext())
-                            .setTitle("Whoops, something went wrong")
-                            .setMessage(e.getMessage())
-                            .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                @Override
-                                public void onDismiss(DialogInterface dialogInterface) {
-                                    getActivity().finish();
-                                }
-                            }).create().show();
-                } else {
-                    adapter.setDatabases(result);
-                    adapter.notifyDataSetChanged();
-                    swipeRefreshLayout.setRefreshing(false);
+            public List<Database> onError(Exception exception) {
+                this.exception = exception;
+                return new ArrayList<>();
+            }
+
+            @Override
+            public List<Database> onResultAsync(ResultSet results) {
+                List<Database> databases = new ArrayList<>();
+
+                try {
+                    while (results.next()) {
+                        Database database = new Database(
+                            results.getString("name"),
+                            results.getString("owner"),
+                            results.getString("comment"),
+                            results.getString("tablespace_name"),
+                            results.getBoolean("is_template")
+                        );
+
+                        databases.add(database);
+                    }
+                } catch (SQLException e) {
+                    Log.e(DatabaseListFragment.TAG, e.getMessage());
+                    this.exception = e;
                 }
+
+                return databases;
+            }
+
+            @Override
+            public void onResultSync(List<Database> result) {
+                if (this.exception != null) {
+                    new AlertDialog.Builder(getContext())
+                        .setTitle("Whoops, something went wrong")
+                        .setMessage(this.exception.getMessage())
+                        .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialogInterface) {
+                                getActivity().finish();
+                            }
+                        }).create().show();
+
+                    return;
+                }
+
+
+                adapter.setDatabases(result);
+                adapter.notifyDataSetChanged();
             }
         });
-
-        fetchDatabasesTask.execute(this.server);
     }
 
     public interface OnDatabaseSelectedListener {

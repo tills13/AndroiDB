@@ -1,12 +1,11 @@
 package ca.sbstn.androidb.sql;
 
-import java.io.Serializable;
-import java.util.List;
+import java.util.Locale;
 
-/**
- * Created by tills13 on 2015-07-10.
- */
-public class Server implements Serializable {
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
+public class Server extends RealmObject {
     public static String[] colors = new String[] {
             "#E57373", // red_303
             "#64B5F6", // blue_300
@@ -23,7 +22,7 @@ public class Server implements Serializable {
             "#FF8A65"
     };
 
-    private String id;
+    @PrimaryKey
     private String name;
 
     private String host;
@@ -35,14 +34,10 @@ public class Server implements Serializable {
     private String color;
 
     private String defaultDatabase;
-    private List<Database> databases; // list of all databases
 
-    public Server() {
+    public Server() {}
 
-    }
-
-    public Server(String id, String name, String host, int port, String username, String password, String defaultDatabase, String color) {
-        this.id = id;
+    public Server(String name, String host, int port, String username, String password, String defaultDatabase, String color) {
         this.name = name;
         this.host = host;
         this.port = port;
@@ -53,12 +48,8 @@ public class Server implements Serializable {
         this.defaultDatabase = defaultDatabase;
     }
 
-    public Server(String id, String name, String host, int port, String username, String password) {
-        this(id, name, host, port, username, password, "postgres", "#E57373");
-    }
-
-    public String getId() {
-        return this.id;
+    public Server(String name, String host, int port, String username, String password) {
+        this(name, host, port, username, password, "postgres", "#E57373");
     }
 
     public String getName() {
@@ -87,10 +78,6 @@ public class Server implements Serializable {
 
     public String getColor() {
         return this.color;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public void setName(String name) {
@@ -123,8 +110,7 @@ public class Server implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("%s %s %s %d %s %s %s",
-            this.getId(),
+        return String.format(Locale.getDefault(), "%s %s %d %s %s %s",
             this.getName(),
             this.getHost(),
             this.getPort(),

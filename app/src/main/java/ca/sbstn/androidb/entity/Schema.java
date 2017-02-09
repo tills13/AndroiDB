@@ -6,9 +6,6 @@ import java.util.List;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.Table;
 
-/**
- * Created by tyler on 24/04/16.
- */
 public class Schema {
     protected String name;
     protected Database database;

@@ -17,18 +17,12 @@ import android.support.v7.widget.Toolbar;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.application.AndroiDB;
 import ca.sbstn.androidb.util.Colours;
-import io.realm.Realm;
-import io.realm.RealmConfiguration;
 
-/**
- * Created by tyler on 21/04/16.
- */
 public class BaseActivity extends AppCompatActivity {
     protected Toolbar toolbar;
     protected SharedPreferences sharedPreferences;
     protected FragmentManager fragmentManager;
     private ValueAnimator actionbarAnimator;
-    private Realm realm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,14 +33,6 @@ public class BaseActivity extends AppCompatActivity {
 
         this.fragmentManager = this.getSupportFragmentManager();
         this.sharedPreferences = this.getSharedPreferences(AndroiDB.SHARED_PREFS_KEY, Context.MODE_PRIVATE);
-
-        //byte[] key = new byte[64];
-        //new SecureRandom().nextBytes(key);
-        RealmConfiguration config = new RealmConfiguration.Builder(this)
-            //.encryptionKey(key)
-            .build();
-
-        this.realm = Realm.getInstance(config);
     }
 
     public SharedPreferences getSharedPreferences() {
@@ -98,10 +84,6 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
-    public Realm getRealm() {
-        return this.realm;
-    }
-
     public void setToolbarTitle(String title) {
         if (this.getSupportActionBar() != null) {
            this.getSupportActionBar().setTitle(title);
@@ -137,14 +119,13 @@ public class BaseActivity extends AppCompatActivity {
     public void setToolbarColor(int color, boolean animate, final boolean setStatusBar) {
         if (animate) {
             Drawable toolbarBackground = this.toolbar.getBackground();
-            int currentColor;
 
-            if (toolbarBackground instanceof ColorDrawable) {
-                currentColor = ((ColorDrawable) toolbarBackground).getColor();
-            } else {
+            if (!(toolbarBackground instanceof  ColorDrawable)) {
                 this.toolbar.setBackgroundColor(color);
                 return;
             }
+
+            int currentColor = ((ColorDrawable) toolbarBackground).getColor();
 
             if (this.actionbarAnimator != null && this.actionbarAnimator.isRunning()) {
                 currentColor = (Integer) this.actionbarAnimator.getAnimatedValue();
