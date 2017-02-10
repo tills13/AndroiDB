@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="app_theme_color">#2b303b</color>
-    <color name="app_theme_color_dark">#20242c</color>
+    <color name="app_theme_color">#2A2B2E</color>
+    <color name="app_theme_color_dark">#171719</color>
 
     <color name="title_section">#20242c</color>
     <color name="information_section">#262a34</color>
@@ -322,9 +322,10 @@
     <color name="blue_grey_900">#263238</color>
     <!-- Blue Grey -->
 
-    <color name="colorPrimary">#2b303b</color>
-    <color name="colorPrimaryDark">#20242c</color>
-    <color name="colorAccent">#E91E63</color>
+    <color name="colorPrimary">@color/app_theme_color</color>
+    <color name="colorPrimaryDark">@color/app_theme_color_dark</color>
+    <color name="colorAccent">#E04831</color>
+    <color name="text">#F9F0D1</color>
 
     <color name="black">#2b303b</color>
     <color name="white">#FFFFFF</color>

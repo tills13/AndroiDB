@@ -2,13 +2,16 @@ package ca.sbstn.androidb.fragment;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.Html;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -18,14 +21,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.activity.ViewDataActivity;
 import ca.sbstn.androidb.sql.Database;
 
-/**
- * Created by tills13 on 2015-11-26.
- */
 public class QueryRunnerFragment extends Fragment {
     public static final String PARAM_DATABASE = "DATABASE";
     public static final String SHARED_PREFS_QUERY_HISTORY_KEY = "AndroiDB_Query_History";
@@ -34,9 +36,9 @@ public class QueryRunnerFragment extends Fragment {
     private QueryHistoryAdapter historyAdapter;
     private OnHistoryButtonClickListener onHistoryButtonClickListener;
 
-    private EditText queryField;
-    private TextView statusField;
-    private ProgressBar loadingBar;
+    @BindView(R.id.query_field) protected EditText queryField;
+    @BindView(R.id.query_status) protected TextView statusField;
+    @BindView(R.id.loading_bar) protected ProgressBar loadingBar;
 
     public QueryRunnerFragment() {}
 
@@ -91,34 +93,22 @@ public class QueryRunnerFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_query_runner, null);
+        View layout = inflater.inflate(R.layout.query_runner, container, false);
+        ButterKnife.bind(this, layout);
 
-        this.queryField = (EditText) view.findViewById(R.id.query_field);
-        this.statusField = (TextView) view.findViewById(R.id.query_status);
-        this.loadingBar = (ProgressBar) view.findViewById(R.id.loading_bar);
+        this.queryField.addTextChangedListener(new QueryFormatter(this.queryField));
 
-        ((Button) view.findViewById(R.id.query_runner_next)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onHistoryButtonClickListener.onClickNext();
-            }
-        });
+        layout.findViewById(R.id.query_runner_next).setOnClickListener((view) ->
+            onHistoryButtonClickListener.onClickNext()
+        );
 
-        ((Button) view.findViewById(R.id.query_runner_next)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onHistoryButtonClickListener.onClickPrevious();
-            }
-        });
+        layout.findViewById(R.id.query_runner_next).setOnClickListener((view) ->
+            onHistoryButtonClickListener.onClickPrevious()
+        );
 
-        ((Button) view.findViewById(R.id.query_runner_run)).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                runQuery();
-            }
-        });
+        layout.findViewById(R.id.query_runner_run).setOnClickListener((view) -> runQuery());
 
-        return view;
+        return layout;
     }
 
     public void runQuery() {
@@ -129,14 +119,14 @@ public class QueryRunnerFragment extends Fragment {
         ((View) statusField.getParent()).setVisibility(View.GONE);
 
         Intent intent = new Intent(getContext(), ViewDataActivity.class);
-        intent.putExtra(ViewDataActivity.QUERY_PARAM, query);
-        intent.putExtra(ViewDataActivity.DATABASE_PARAM, this.database);
+        intent.putExtra(ViewDataActivity.PARAM_QUERY, query);
+        intent.putExtra(ViewDataActivity.PARAM_DATABASE, this.database);
         startActivity(intent);
     }
 
     public void readHistory() {
         SharedPreferences sharedPreferences = ((BaseActivity) getActivity()).getSharedPreferences();
-        Set<String> mSet = sharedPreferences.getStringSet(SHARED_PREFS_QUERY_HISTORY_KEY, new HashSet<String>());
+        Set<String> mSet = sharedPreferences.getStringSet(SHARED_PREFS_QUERY_HISTORY_KEY, new HashSet<>());
 
         this.historyAdapter.setItems(new ArrayList<>(mSet));
     }
@@ -147,25 +137,69 @@ public class QueryRunnerFragment extends Fragment {
 
         editor.putStringSet(SHARED_PREFS_QUERY_HISTORY_KEY, new HashSet<>(this.historyAdapter.getHistory()));
 
-        if (immediate) editor.commit();
+        if (immediate) editor.apply();
         else editor.apply();
     }
 
     private interface OnHistoryButtonClickListener {
-        public void onClickNext();
-        public void onClickPrevious();
+        void onClickNext();
+        void onClickPrevious();
     }
 
+    private static class QueryFormatter implements TextWatcher {
+        private EditText editText;
+
+        public QueryFormatter(EditText editText) {
+            this.editText = editText;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            //this.cursorIndex = queryField.getSelectionStart();
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            this.editText.removeTextChangedListener(this);
+
+            String fieldValue = editable.toString();
+
+            int selectionStart = this.editText.getSelectionStart();
+            int selectionEnd = this.editText.getSelectionEnd();
+
+            fieldValue = fieldValue
+                .replaceAll("'(.*?)'", "<font color='orange'>'$1'</font>")
+                .replaceAll("\\.([^ ]+)", "<font color='purple'>.$1</font>")
+                .replaceAll("(?i)(analyze|inspect)", "<font color='blue'>$1</font>")
+                .replaceAll("(?i)(select|insert|create table|update)", "<font color='blue'>$1</font>")
+                .replaceAll("(?i) (from|as|insert|where|join|on|natural|public|limit|offset|update|delete)", "<font color='blue'> $1</font>")
+                .replaceAll("(?i) (order by|group by)", "<font color='blue'> $1</font>");
+
+            if (Build.VERSION.SDK_INT >= 24) {
+                this.editText.setText(Html.fromHtml(fieldValue, Html.FROM_HTML_MODE_COMPACT));
+            } else {
+                this.editText.setText(Html.fromHtml(fieldValue));
+            }
+
+            this.editText.setSelection(selectionStart, selectionEnd);
+
+            this.editText.addTextChangedListener(this);
+        }
+
+    }
     private static class QueryHistoryAdapter {
         private List<String> queryHistory;
         private int position;
 
-        public QueryHistoryAdapter() {
+        QueryHistoryAdapter() {
             this.queryHistory = new ArrayList<>();
             this.position = 0;
         }
 
-        public String getQuery(int position) {
+        String getQuery(int position) {
             if (this.getHistorySize() == 0) return "";
             if (position >= this.queryHistory.size()) position = this.queryHistory.size() - 1;
             if (position < 0) position = 0;
@@ -173,15 +207,15 @@ public class QueryRunnerFragment extends Fragment {
             return this.queryHistory.get(position);
         }
 
-        public void setItems(List<String> history) {
+        void setItems(List<String> history) {
             this.queryHistory = history;
         }
 
-        public void addItem(String item) {
+        void addItem(String item) {
             this.queryHistory.add(0, item);
         }
 
-        public String getNext() {
+        String getNext() {
             if (this.position != (this.getHistorySize() - 1)) {
                 this.position++;
             }
@@ -189,7 +223,7 @@ public class QueryRunnerFragment extends Fragment {
             return this.getQuery(this.position);
         }
 
-        public String getPrevious() {
+        String getPrevious() {
             if (this.position != 0) {
                 this.position--;
             }
@@ -197,11 +231,11 @@ public class QueryRunnerFragment extends Fragment {
             return this.getQuery(this.position);
         }
 
-        public int getHistorySize() {
+        int getHistorySize() {
             return this.queryHistory.size();
         }
 
-        public List<String> getHistory() {
+        List<String> getHistory() {
             return this.queryHistory;
         }
     }

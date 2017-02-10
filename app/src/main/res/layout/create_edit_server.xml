@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <LinearLayout
         android:id="@+id/button_bar"
         android:layout_width="fill_parent"
@@ -13,20 +16,21 @@
         android:layout_alignParentBottom="true"
         style="?android:attr/buttonBarStyle">
         <Button
-            android:id="@+id/save"
+            android:id="@+id/save_server"
             android:text="@string/action_save"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="?android:attr/buttonBarButtonStyle"/>
         <Button
-            android:id="@+id/test"
+            android:id="@+id/test_connection"
             android:text="@string/action_test"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             style="?android:attr/buttonBarButtonStyle" />
     </LinearLayout>
+
     <ScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -36,170 +40,115 @@
             android:id="@+id/new_server_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="16dp"
             android:orientation="vertical">
 
             <ca.sbstn.androidb.view.ColorChooser
+                android:id="@+id/color_chooser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
                 android:theme="@style/AndroiDB.Title"
                 android:text="@string/server_info_label" />
 
-            <LinearLayout
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:orientation="horizontal"
-                android:weightSum="1">
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="16dp"
-                    style="@style/AndroiDB.Label"
-                    android:text="@string/server_name" />
-                <EditText android:id="@+id/server_name"
+                android:layout_marginBottom="8dp"
+                style="@style/AndroiDB.TextInputLayoutStyle">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/server_name"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/edit_text_height"
+                    android:layout_height="wrap_content"
                     android:hint="@string/prompt_name"
                     android:inputType="text"
-                    android:layout_weight="1"
-                    android:singleLine="true" />
-            </LinearLayout>
+                    style="@style/AndroiDB.EditTextStyle" />
+            </android.support.design.widget.TextInputLayout>
 
-            <LinearLayout
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:orientation="horizontal"
-                android:weightSum="1">
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="16dp"
-                    style="@style/AndroiDB.Label"
-                    android:text="@string/server_host" />
-                <EditText android:id="@+id/server_host"
+                android:layout_marginBottom="8dp"
+                style="@style/AndroiDB.TextInputLayoutStyle">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/server_host"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:hint="@string/prompt_host"
                     android:inputType="text"
-                    android:singleLine="true" />
-            </LinearLayout>
+                    style="@style/AndroiDB.EditTextStyle" />
+            </android.support.design.widget.TextInputLayout>
 
-            <LinearLayout
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:orientation="horizontal"
-                android:weightSum="1">
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="16dp"
-                    style="@style/AndroiDB.Label"
-                    android:text="@string/server_port"/>
-                <EditText android:id="@+id/server_port"
+                android:layout_marginBottom="8dp"
+                style="@style/AndroiDB.TextInputLayoutStyle">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/server_port"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_port"
                     android:inputType="number"
-                    android:singleLine="true"
-                    android:layout_weight="3"/>
-            </LinearLayout>
+                    style="@style/AndroiDB.EditTextStyle" />
+            </android.support.design.widget.TextInputLayout>
 
-            <LinearLayout
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:orientation="horizontal"
-                android:weightSum="1">
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="16dp"
-                    style="@style/AndroiDB.Label"
-                    android:text="@string/server_default_db"/>
-                <EditText android:id="@+id/server_default_db"
+                android:layout_marginBottom="8dp"
+                style="@style/AndroiDB.TextInputLayoutStyle">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/server_default_db"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/edit_text_height"
+                    android:layout_height="wrap_content"
                     android:hint="@string/prompt_default_db"
                     android:inputType="text"
-                    android:maxLines="1"
-                    android:singleLine="true" />
-            </LinearLayout>
+                    style="@style/AndroiDB.EditTextStyle" />
+            </android.support.design.widget.TextInputLayout>
 
             <TextView
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
                 android:theme="@style/AndroiDB.Title"
                 android:text="@string/user_info_label"/>
 
-            <LinearLayout
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:orientation="horizontal"
-                android:weightSum="1">
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="16dp"
-                    style="@style/AndroiDB.Label"
-                    android:text="@string/server_username"/>
-                <EditText android:id="@+id/server_username"
+                android:layout_marginBottom="8dp"
+                style="@style/AndroiDB.TextInputLayoutStyle">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/server_username"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/edit_text_height"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
                     android:hint="@string/prompt_username"
                     android:inputType="text"
-                    android:singleLine="true" />
-            </LinearLayout>
+                    style="@style/AndroiDB.EditTextStyle" />
+            </android.support.design.widget.TextInputLayout>
 
-            <LinearLayout
+            <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:orientation="horizontal"
-                android:weightSum="1">
-                <TextView
-                    android:layout_weight="1"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="0dp"
-                    android:paddingEnd="16dp"
-                    style="@style/AndroiDB.Label"
-                    android:text="@string/server_password"/>
-                <EditText android:id="@+id/server_password"
+                android:layout_marginBottom="8dp"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/white"
+                style="@style/AndroiDB.TextInputLayoutStyle">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/server_password"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/edit_text_height"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
                     android:hint="@string/prompt_password"
                     android:inputType="textPassword"
-                    android:maxLines="1"
-                    android:singleLine="true" />
-            </LinearLayout>
+                    style="@style/AndroiDB.EditTextStyle" />
+            </android.support.design.widget.TextInputLayout>
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

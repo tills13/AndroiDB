@@ -9,18 +9,19 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:elevation">0dp</item>
-        <item name="colorAccent">@color/accent_material_light</item>
+
+        <item name="colorAccent">@color/colorAccent</item>
     </style>
 
     <style name="AndroiDB.Title" parent="AndroiDB.AppTheme">
-        <item name="android:textColor">@color/grey_400</item>
+        <item name="android:textColor">@color/colorAccent</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textSize">16sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
     <style name="AndroiDB.Label" parent="AndroiDB.AppTheme">
-        <item name="android:textColor">@color/grey_200</item>
+        <item name="android:textColor">@color/colorAccent</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textSize">14sp</item>
         <item name="android:fontFamily">sans-serif-light</item>
@@ -39,4 +40,20 @@
 
     <style name="AndroiDB.AppBar" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
     <style name="AndroiDB.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="AndroiDB.TextInputLayoutStyle" parent="Widget.Design.TextInputLayout">
+        <item name="android:textColorHint">@color/white</item>
+        <item name="hintTextAppearance">@style/AndroiDB.TextInputLayoutStyle.HintTextAppearance</item>
+    </style>
+
+    <style name="AndroiDB.TextInputLayoutStyle.HintTextAppearance" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="AndroiDB.EditTextStyle" parent="Base.V12.Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:backgroundTint">@color/white</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+    </style>
 </resources>
