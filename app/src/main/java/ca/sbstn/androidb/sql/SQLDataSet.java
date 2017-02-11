@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * Created by tills13 on 2015-11-18.
- */
+import ca.sbstn.androidb.query.ServerManager;
+
 public class SQLDataSet implements Iterable<SQLDataSet.Row>, Serializable {
     private String query;
     private List<Column> columns;
@@ -21,7 +20,7 @@ public class SQLDataSet implements Iterable<SQLDataSet.Row>, Serializable {
 
     private Table table;
 
-    public SQLDataSet() {
+    private SQLDataSet() {
         this.columns = new ArrayList<>(); // column definitions
         this.rows = new ArrayList<>();
     }
@@ -47,6 +46,8 @@ public class SQLDataSet implements Iterable<SQLDataSet.Row>, Serializable {
             Log.d("SQLResult", e.getMessage());
             return null;
         }
+
+        sqlDataSet.setTable(ServerManager.getTable());
 
         return sqlDataSet;
     }

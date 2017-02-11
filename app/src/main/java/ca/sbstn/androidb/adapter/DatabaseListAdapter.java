@@ -14,12 +14,9 @@ import java.util.List;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.sql.Database;
 
-/**
- * Created by tills13 on 15-06-26.
- */
 public class DatabaseListAdapter extends BaseAdapter {
-    public Context context;
-    public List<Database> databases;
+    private Context context;
+    private List<Database> databases;
 
     public DatabaseListAdapter(Context context) {
         super();
@@ -56,8 +53,8 @@ public class DatabaseListAdapter extends BaseAdapter {
             colorEven = this.context.getColor(R.color.table_row_even);
             colorOdd = this.context.getColor(R.color.table_row_odd);
         } else {
-            colorEven = this.context.getResources().getColor(R.color.table_row_even);
-            colorOdd = this.context.getResources().getColor(R.color.table_row_odd);
+            colorEven = this.context.getResources().getColor(R.color.table_row_even, null);
+            colorOdd = this.context.getResources().getColor(R.color.table_row_odd, null);
         }
 
         convertView.setBackgroundColor(position % 2 == 0 ? colorEven : colorOdd);

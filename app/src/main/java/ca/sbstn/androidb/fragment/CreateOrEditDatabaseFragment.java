@@ -3,31 +3,44 @@ package ca.sbstn.androidb.fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.BaseActivity;
+import ca.sbstn.androidb.query.QueryExecutor;
 import ca.sbstn.androidb.sql.Database;
+import ca.sbstn.androidb.sql.Query;
 import ca.sbstn.androidb.sql.Server;
 import io.realm.Realm;
 
 public class CreateOrEditDatabaseFragment extends Fragment {
+    public static final String TAG = "CorEDatabase";
     public static final String DATABASE_PARAM = "DATABASE";
     public static final String SERVER_PARAM_NAME = "SERVER_NAME";
 
@@ -44,33 +57,29 @@ public class CreateOrEditDatabaseFragment extends Fragment {
     protected String originalTableSpace;
 
     protected ScrollView layout;
-    protected LinearLayout container;
-    protected EditText nameField;
-    protected AutoCompleteTextView ownerField;
-    protected EditText commentField;
-    protected AutoCompleteTextView tableSpaceField;
-    protected AutoCompleteTextView templateField;
 
+    @BindView(R.id.container) protected LinearLayout container;
+    @BindView(R.id.database_name) protected EditText nameField;
+    @BindView(R.id.db_owner_container) protected TextInputLayout ownerContainer;
+    @BindView(R.id.database_owner) protected AutoCompleteTextView ownerField;
+    @BindView(R.id.database_comment) protected EditText commentField;
+    @BindView(R.id.db_tablespace_container) protected TextInputLayout tablespaceContainer;
+    @BindView(R.id.database_tablespace) protected AutoCompleteTextView tablespaceField;
+    @BindView(R.id.db_template_container) protected TextInputLayout templateContainer;
+    @BindView(R.id.database_template) protected AutoCompleteTextView templateField;
+
+    protected QueryExecutor executor;
     protected Realm realm;
 
     public CreateOrEditDatabaseFragment() {
     }
 
-    public static CreateOrEditDatabaseFragment newInstance(Server server) {
-        CreateOrEditDatabaseFragment fragment = new CreateOrEditDatabaseFragment();
-
-        Bundle bundle = new Bundle();
-        bundle.putSerializable(SERVER_PARAM_NAME, server.getName());
-
-        fragment.setArguments(bundle);
-        return fragment;
-    }
-
-    public static CreateOrEditDatabaseFragment newInstance(Database database) {
+    public static CreateOrEditDatabaseFragment newInstance(Server server, Database database) {
         CreateOrEditDatabaseFragment fragment = new CreateOrEditDatabaseFragment();
 
         Bundle bundle = new Bundle();
         bundle.putSerializable(DATABASE_PARAM, database);
+        bundle.putSerializable(SERVER_PARAM_NAME, server.getName());
 
         fragment.setArguments(bundle);
         return fragment;
@@ -85,6 +94,8 @@ public class CreateOrEditDatabaseFragment extends Fragment {
 
         if (this.getArguments() != null) {
             this.database = (Database) this.getArguments().getSerializable(DATABASE_PARAM);
+            this.server = this.realm.where(Server.class).equalTo("name", this.getArguments().getString(SERVER_PARAM_NAME)).findFirst();
+            this.executor = QueryExecutor.forServer(this.server);
 
             if (this.database != null) {
                 this.mode = MODE_UPDATE;
@@ -104,8 +115,9 @@ public class CreateOrEditDatabaseFragment extends Fragment {
             this.fetchRoleAutocompleteList();
             this.fetchTablespaceAutocompleteList();
 
-            if (this.mode == MODE_CREATE)
+            if (this.mode == MODE_CREATE) {
                 this.fetchTemplateList();
+            }
         }
     }
 
@@ -113,56 +125,91 @@ public class CreateOrEditDatabaseFragment extends Fragment {
         final String newName = this.nameField.getText().toString();
         final String newOwner = this.ownerField.getText().toString();
         final String newComment = this.commentField.getText().toString();
-        final String newTableSpace = this.tableSpaceField.getText().toString();
+        final String newTableSpace = this.tablespaceField.getText().toString();
 
         String template = this.templateField.getText().toString();
 
-        if (template.equals(""))
-            template = "DEFAULT";
+        if (template.equals("")) template = "DEFAULT";
 
         if (this.mode == MODE_UPDATE) {
-            if (newName.equals(this.originalName) && newTableSpace.equals(this.originalTableSpace)
-                    && newOwner.equals(this.originalOwner) && newComment.equals(this.originalComment)) {
+            if (newName.equals(this.originalName) &&
+                newTableSpace.equals(this.originalTableSpace)&&
+                newOwner.equals(this.originalOwner) &&
+                newComment.equals(this.originalComment)) {
+                Snackbar.make(this.container, "Nothing to update", Snackbar.LENGTH_SHORT).show();
                 return;
             }
 
             String query = "BEGIN TRANSACTION;";
 
             if (!newName.equals(this.originalName)) {
-                query = query + String.format(Locale.getDefault(), "ALTER DATABASE \"%s\" RENAME TO \"%s\";",
-                        this.database.getName(), newName);
+                query = query + String.format(
+                    Locale.getDefault(),
+                    "ALTER DATABASE \"%s\" RENAME TO \"%s\";",
+                    this.database.getName(),
+                    newName
+                );
+
                 this.database.setName(newName);
             }
 
-            if (!newTableSpace.equals(this.originalTableSpace))
-                query = query + String.format(Locale.getDefault(), "ALTER DATABASE \"%s\" SET TABLESPACE \"%s\";",
-                        this.database.getName(), newTableSpace);
-            if (!newOwner.equals(this.originalOwner))
-                query = query + String.format(Locale.getDefault(), "ALTER DATABASE \"%s\" OWNER TO \"%s\";",
-                        this.database.getName(), newOwner);
-            if (!newComment.equals(this.originalComment))
-                query = query
-                        + String.format("COMMENT ON DATABASE \"%s\" IS '%s';", this.database.getName(), newComment);
+            if (!newTableSpace.equals(this.originalTableSpace)) {
+                query = query + String.format(
+                    Locale.getDefault(),
+                    "ALTER DATABASE \"%s\" SET TABLESPACE \"%s\";",
+                    this.database.getName(),
+                    newTableSpace
+                );
+            }
+
+            if (!newOwner.equals(this.originalOwner)) {
+                query = query + String.format(
+                    Locale.getDefault(),
+                    "ALTER DATABASE \"%s\" OWNER TO \"%s\";",
+                    this.database.getName(),
+                    newOwner
+                );
+            }
+
+            if (!newComment.equals(this.originalComment)) {
+                query = query + String.format(
+                    "COMMENT ON DATABASE \"%s\" IS '%s';",
+                    this.database.getName(),
+                    newComment
+                );
+            }
 
             query = query + "COMMIT;";
 
-            /*ExecuteQueryTask updateDatabaseTask = new ExecuteQueryTask(this.server, getContext(), new Callback<SQLDataSet>() {
+            this.executor.execute(query, new QueryExecutor.BaseCallback<Void>() {
                 @Override
-                public void onResult(SQLDataSet result) {
-                    if (!this.getTask().hasException()) {
-                        if (!newName.equals(originalName)) database.setName(newName);
-                        if (!newTableSpace.equals(originalTableSpace)) database.setTableSpace(newTableSpace);
-                        if (!newOwner.equals(originalOwner)) database.setOwner(newOwner);
-            
-                        Snackbar.make(container, String.format(Locale.getDefault(), "Successfully updated %s", database.getName()), Snackbar.LENGTH_SHORT).show();
-                    } else {
-                        Exception exception = this.getTask().getException();
-                        Snackbar.make(container, String.format(Locale.getDefault(), "Something went wrong: %s", exception.getMessage()), Snackbar.LENGTH_LONG).show();
-                    }
+                public boolean onError(Throwable thrown) {
+                    Snackbar.make(
+                        container,
+                        String.format(
+                            Locale.getDefault(),
+                            "Something went wrong: %s",
+                            thrown.getMessage()
+                        ),
+                        Snackbar.LENGTH_SHORT
+                    ).show();
+
+                    return false;
+                }
+
+                @Override
+                public void onResultSync(Void result) {
+                    Snackbar.make(
+                        container,
+                        String.format(
+                            Locale.getDefault(),
+                            "Successfully updated %s",
+                            database.getName()
+                        ),
+                        Snackbar.LENGTH_SHORT
+                    ).show();
                 }
             });
-            
-            updateDatabaseTask.setExpectResults(false).execute(query);*/
         } else {
             this.database.setName(newName);
             this.database.setOwner(newOwner);
@@ -252,138 +299,106 @@ public class CreateOrEditDatabaseFragment extends Fragment {
     }
 
     public void fetchRoleAutocompleteList() {
-        /*Callback<SQLDataSet> callback = new Callback<SQLDataSet>() {
-            @Override
-            public void onResult(SQLDataSet result) {
-                List<String> roles = new ArrayList<>();
-        
-                for (SQLDataSet.Row row : result) {
-                    roles.add(row.getString("rolname"));
-                }
-        
-                String [] mRoles = new String[roles.size()];
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line, roles.toArray(mRoles));
-                ownerField.setAdapter(adapter);
-            }
-        };*/
-
-        String query = "SELECT rolname FROM pg_roles;";
-        /*QueryExecutor.execute(this.server, this.mode == MODE_CREATE ? "postgres" : this.database.getName(), query, new QueryExecutor.Callback<List<String>>() {
+        this.executor.execute("SELECT rolname AS role FROM pg_roles;", new QueryExecutor.BaseCallback<List<String>>() {
             @Override
             public List<String> onResultAsync(ResultSet result) {
                 List<String> roles = new ArrayList<>();
-        
+
                 try {
                     result.beforeFirst();
-        
-                    while (result.next()) {
-                        roles.add(result.getString("rolname"));
-                    }
-                } catch (SQLException e) {
-                    Log.d("COrEDatabaseFrag.", String.format(Locale.getDefault(), "Error fetching rolnames: %s", e.getMessage()));
+                    while (result.next()) roles.add(result.getString("role"));
+                } catch (SQLException exception) {
+                    Log.d(TAG, String.format(Locale.getDefault(), "Error fetching roles: %s", exception.getMessage()));
                 }
-        
+
                 return roles;
             }
-        
+
             @Override
             public void onResultSync(List<String> result) {
                 String mRoles[] = new String[result.size()];
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line, result.toArray(mRoles));
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line, result.toArray(mRoles));
                 ownerField.setAdapter(adapter);
             }
-        });*/
+        });
     }
 
     public void fetchTablespaceAutocompleteList() {
-        /*Callback<SQLDataSet> callback = new Callback<SQLDataSet>() {
+        this.executor.execute("SELECT spcname as tablespace FROM pg_tablespace;", new QueryExecutor.BaseCallback<List<String>>() {
             @Override
-            public void onResult(SQLDataSet result) {
+            public List<String> onResultAsync(ResultSet result) {
                 List<String> tableSpaces = new ArrayList<>();
-        
-                for (SQLDataSet.Row row : result) {
-                    tableSpaces.add(row.getString("spcname"));
+
+                try {
+                    result.beforeFirst();
+                    while (result.next()) tableSpaces.add(result.getString("tablespace"));
+                } catch (SQLException exception) {
+                    Log.d(TAG, String.format(Locale.getDefault(), "Error fetching tablespaces: %s", exception.getMessage()));
                 }
-        
-                String [] mTableSpaces = new String[tableSpaces.size()];
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_dropdown_item_1line, tableSpaces.toArray(mTableSpaces));
-        
-                if (tableSpaceField.getText().toString().equals("")) {
-                    tableSpaceField.setText(mTableSpaces[0]);
-                }
-        
-                tableSpaceField.setAdapter(adapter);
+
+                return tableSpaces;
             }
-        };
-        
-        ExecuteQueryTask fetchRolesTask = this.mode == MODE_CREATE ? new ExecuteQueryTask(this.server, getContext(), callback) :
-                                                                     new ExecuteQueryTask(this.database, getContext(), callback);
-        
-        fetchRolesTask.execute("SELECT * FROM pg_tablespace;");*/
+
+            @Override
+            public void onResultSync(List<String> result) {
+                String [] mTableSpaces = new String[result.size()];
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line, result.toArray(mTableSpaces));
+
+                if (tablespaceField.getText().toString().equals("")) {
+                    tablespaceField.setText(mTableSpaces[0]);
+                }
+
+                tablespaceField.setAdapter(adapter);
+            }
+        });
     }
 
     public void fetchTemplateList() {
-        /*Callback<SQLDataSet> callback = new Callback<SQLDataSet>() {
+        this.executor.execute(
+            "SELECT datname AS template FROM pg_database pgd WHERE pgd.datistemplate IS TRUE;",
+            new QueryExecutor.BaseCallback<List<String>>() {
             @Override
-            public void onResult(SQLDataSet result) {
-                List<String> templateDatabases = new ArrayList<>();
-        
-                for (SQLDataSet.Row row : result) {
-                    templateDatabases.add(row.getString("name"));
+            public List<String> onResultAsync(ResultSet result) {
+                List<String> templates = new ArrayList<>();
+
+                try {
+                    result.beforeFirst();
+                    while (result.next()) templates.add(result.getString("template"));
+                } catch (SQLException exception) {
+                    Log.d(TAG, String.format(Locale.getDefault(), "Error fetching templates: %s", exception.getMessage()));
                 }
-        
-                String [] mTemplateDatabases = new String[templateDatabases.size()];
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_dropdown_item_1line, templateDatabases.toArray(mTemplateDatabases));
-        
-                if (templateField.getText().toString().equals("")) {
-                    templateField.setText(mTemplateDatabases[0]);
-                }
-        
+
+                return templates;
+            }
+
+            @Override
+            public void onResultSync(List<String> result) {
+                String [] mTemplates = new String[result.size()];
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                    getContext(),
+                    android.R.layout.simple_dropdown_item_1line,
+                    result.toArray(mTemplates)
+                );
+
                 templateField.setAdapter(adapter);
             }
-        };*/
-
-        //ExecuteQueryTask fetchRolesTask = new ExecuteQueryTask(this.server, getContext(), callback);
-        //fetchRolesTask.execute("SELECT datname AS name FROM pg_database pgd WHERE pgd.datistemplate IS TRUE;");
+        });
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.layout = (ScrollView) inflater.inflate(R.layout.edit_database, null);
-        this.container = (LinearLayout) this.layout.findViewById(R.id.container);
-
-        this.nameField = ((EditText) this.layout.findViewById(R.id.database_name));
-        this.ownerField = ((AutoCompleteTextView) this.layout.findViewById(R.id.database_owner));
-        this.commentField = ((EditText) this.layout.findViewById(R.id.database_comment));
-        this.tableSpaceField = ((AutoCompleteTextView) this.layout.findViewById(R.id.database_tablespace));
-        this.templateField = ((AutoCompleteTextView) this.layout.findViewById(R.id.database_template));
+        this.layout = (ScrollView) inflater.inflate(R.layout.edit_database, container, false);
+        ButterKnife.bind(this, this.layout);
 
         this.nameField.setText(this.database.getName());
         this.ownerField.setText(this.database.getOwner());
         this.commentField.setText(this.database.getComment());
-        this.tableSpaceField.setText(this.database.getTableSpace());
+        this.tablespaceField.setText(this.database.getTableSpace());
 
-        if (this.mode == MODE_CREATE) {
-            this.nameField.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    ((BaseActivity) getActivity()).setToolbarTitle(editable.toString());
-                }
-            });
-        } else {
-            this.templateField.setEnabled(false);
-            this.templateField.setHint("Only available when creating DBs");
+        if (this.mode != MODE_CREATE) {
+            this.templateContainer.setEnabled(false);
+            this.templateContainer.setHint("Only available when creating DBs");
         }
 
         return this.layout;
@@ -402,24 +417,25 @@ public class CreateOrEditDatabaseFragment extends Fragment {
         int itemId = item.getItemId();
 
         switch (itemId) {
-        case android.R.id.home: {
-            this.finish();
-            return true;
-        }
+            case android.R.id.home: {
+                this.finish();
+                return true;
+            }
 
-        case R.id.action_save: {
-            this.saveDatabase();
-            break;
-        }
+            case R.id.action_save: {
+                this.saveDatabase();
+                break;
+            }
 
-        case R.id.action_delete: {
-            this.deleteDatabase();
-        }
+            case R.id.action_delete: {
+                this.deleteDatabase();
+            }
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     public interface OnDatabaseSavedInterface {
+        void onDatabaseSaved(Database database);
     }
 }

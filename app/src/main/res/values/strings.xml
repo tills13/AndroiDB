@@ -60,11 +60,11 @@
     <string name="server_info_label">Server</string>
     <string name="user_info_label">User Info</string>
 
-    <string name="database_title_name">Name</string>
-    <string name="database_title_owner">Owner</string>
-    <string name="database_title_comment">Comment</string>
-    <string name="database_title_tablespace">Tablespace</string>
-    <string name="database_title_template">Template</string>
+    <string name="database_name">Name</string>
+    <string name="database_owner">Owner</string>
+    <string name="database_comment">Comment</string>
+    <string name="database_tablespace">Tablespace</string>
+    <string name="database_template">Template</string>
 
     <string name="server_name">Name</string>
     <string name="server_host">Host</string>

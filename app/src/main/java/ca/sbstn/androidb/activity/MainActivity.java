@@ -7,6 +7,7 @@ import android.support.v7.app.ActionBar;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.fragment.ServerListFragment;
+import ca.sbstn.androidb.query.ServerManager;
 import ca.sbstn.androidb.sql.Server;
 
 public class MainActivity extends BaseActivity implements ServerListFragment.OnServerSelectedListener {
@@ -26,10 +27,19 @@ public class MainActivity extends BaseActivity implements ServerListFragment.OnS
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        ServerManager.setServer(null);
+    }
+
+    @Override
     public void onServerSelected(Server server) {
         Intent intent = new Intent(this, ServerActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        intent.putExtra(ServerActivity.SERVER_PARAM_NAME, server.getName());
+
+        ServerManager.setServer(server);
+
         startActivity(intent);
     }
 }

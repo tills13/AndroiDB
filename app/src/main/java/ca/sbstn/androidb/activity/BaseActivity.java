@@ -135,13 +135,10 @@ public class BaseActivity extends AppCompatActivity {
             if (currentColor == color) return;
 
             this.actionbarAnimator = ValueAnimator.ofObject(new ArgbEvaluator(), currentColor, color);
-            this.actionbarAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                    toolbar.setBackgroundColor((Integer) valueAnimator.getAnimatedValue());
-                    if (setStatusBar) {
-                        getWindow().setStatusBarColor(Colours.darken((Integer) valueAnimator.getAnimatedValue()));
-                    }
+            this.actionbarAnimator.addUpdateListener((valueAnimator) -> {
+                toolbar.setBackgroundColor((Integer) valueAnimator.getAnimatedValue());
+                if (setStatusBar) {
+                    getWindow().setStatusBarColor(Colours.darken((Integer) valueAnimator.getAnimatedValue()));
                 }
             });
 

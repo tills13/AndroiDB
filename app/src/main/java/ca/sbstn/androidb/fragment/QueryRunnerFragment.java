@@ -149,7 +149,7 @@ public class QueryRunnerFragment extends Fragment {
     private static class QueryFormatter implements TextWatcher {
         private EditText editText;
 
-        public QueryFormatter(EditText editText) {
+        QueryFormatter(EditText editText) {
             this.editText = editText;
         }
 

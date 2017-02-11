@@ -35,12 +35,13 @@ import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.adapter.TableListAdapter;
 import ca.sbstn.androidb.entity.Schema;
 import ca.sbstn.androidb.query.QueryExecutor;
+import ca.sbstn.androidb.query.ServerManager;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.sql.Table;
 import io.realm.Realm;
 
-public class TableListFragment extends Fragment {
+public class TableListFragment extends Fragment implements ServerManager.OnDatabaseChangedListener  {
     public static final String TAG = "TableListFragment";
     public static final String PARAM_DATABASE = "DATABASE";
     public static final String PARAM_SERVER_NAME = "SERVER_NAME";
@@ -55,16 +56,8 @@ public class TableListFragment extends Fragment {
 
     public TableListFragment() {}
 
-    public static TableListFragment newInstance(Server server, String database) {
-        TableListFragment fragment = new TableListFragment();
-
-        Bundle bundle = new Bundle();
-        bundle.putString(PARAM_SERVER_NAME, server.getName());
-        bundle.putString(PARAM_DATABASE, database);
-
-        fragment.setArguments(bundle);
-
-        return fragment;
+    public static TableListFragment newInstance() {
+        return new TableListFragment();
     }
 
     @Override
@@ -73,18 +66,25 @@ public class TableListFragment extends Fragment {
 
         this.setHasOptionsMenu(true);
 
-        if (getArguments() != null) {
-            Realm realm = Realm.getDefaultInstance();
+        ServerManager.subscribe(this);
+        this.server = ServerManager.getServer();
+        this.database = ServerManager.getDatabase();
 
-            String database = getArguments().getString(PARAM_DATABASE);
-            String serverName = getArguments().getString(PARAM_SERVER_NAME);
+        this.adapter = new TableListAdapter(getActivity());
+    }
 
-            this.server = realm.where(Server.class).equalTo("name", serverName).findFirst();
+    @Override
+    public void onResume() {
+        super.onResume();
 
-            this.getDatabase(database);
+        ServerManager.reloadDatabase(getContext());
+    }
 
-            this.adapter = new TableListAdapter(getActivity());
-        }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        ServerManager.unsubscribe(this);
     }
 
     @Override
@@ -112,7 +112,7 @@ public class TableListFragment extends Fragment {
 
         switch (itemId) {
             case (R.id.action_edit): {
-                CreateOrEditDatabaseFragment fragment = CreateOrEditDatabaseFragment.newInstance(this.database);
+                CreateOrEditDatabaseFragment fragment = CreateOrEditDatabaseFragment.newInstance(this.server, this.database);
 
                 ((BaseActivity) getActivity()).putDetailsFragment(fragment, true);
                 break;
@@ -172,8 +172,6 @@ public class TableListFragment extends Fragment {
             case R.id.action_drop_table: {
                 View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_edit_text, null);
                 TextView description = ((TextView) view.findViewById(R.id.description));
-                //@BindString(R.string.dialog_desc_drop_table) description;
-                //.setText(getResources().getString(R.string.dialog_desc_drop_table));
 
                 final EditText editText = ((EditText) view.findViewById(R.id.edit_text));
                 editText.setHint(getResources().getString(R.string.dialog_edit_text_hint_drop_table));
@@ -274,54 +272,10 @@ public class TableListFragment extends Fragment {
         return layout;
     }
 
-    public void getDatabase(final String database) {
-        String query = this.getResources().getString(R.string.db_query_fetch_database, database);
-
-        QueryExecutor executor = QueryExecutor.forServer(this.server);
-
-        executor.execute(query, new QueryExecutor.Callback<Database>() {
-            @Override
-            public boolean onError(Throwable thrown) {
-                this.showError((Exception) thrown);
-                return false;
-            }
-
-            @Override
-            public Database onResultAsync(ResultSet results) {
-                try {
-                    results.beforeFirst();
-                    results.next();
-
-                    return new Database(
-                        results.getString("name"),
-                        results.getString("owner"),
-                        results.getString("comment"),
-                        results.getString("tablespace_name"),
-                        results.getBoolean("is_template")
-                    );
-                } catch (SQLException exception) {
-                    Log.e(TableListFragment.TAG, exception.getMessage());
-                    this.showError(exception);
-                }
-
-                return null;
-            }
-
-            @Override
-            public void onResultSync(Database result) {
-                TableListFragment.this.database = result;
-                refresh();
-            }
-
-            private void showError(Exception exception) {
-                new android.app.AlertDialog.Builder(getContext())
-                    .setTitle("Whoops, something went wrong")
-                    .setMessage(exception.getMessage())
-                    .setOnDismissListener((dialogInterface) -> getActivity().finish())
-                    .create()
-                    .show();
-            }
-        });
+    @Override
+    public void onDatabaseChanged(Database database) {
+        this.database = database;
+        refresh();
     }
 
     public void refresh() {

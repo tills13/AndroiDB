@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.GridLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -24,9 +25,6 @@ import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.util.Colours;
 import ca.sbstn.androidb.util.Utils;
 
-/**
- * Created by tills13 on 2015-07-13.
- */
 public class SQLTableLayout extends LinearLayout {
     public static String TAG = "SQLTableLayout";
 
@@ -85,14 +83,11 @@ public class SQLTableLayout extends LinearLayout {
             this.headerView.setVisibility(View.GONE);
         }
 
-        this.verticalScrollContainer.setOnScrollChangeListener(new OnScrollChangeListener() {
-            @Override
-            public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                if (scrollY >= 168) { // todo not hardcode
-                    headerView.animate().translationY(0).setInterpolator(new AccelerateInterpolator(2));
-                } else {
-                    headerView.animate().translationY(-168).setInterpolator(new DecelerateInterpolator(2));
-                }
+        this.verticalScrollContainer.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (scrollY >= 168) { // todo not hardcode
+                headerView.animate().translationY(0).setInterpolator(new AccelerateInterpolator(2));
+            } else {
+                headerView.animate().translationY(-168).setInterpolator(new DecelerateInterpolator(2));
             }
         });
     }
@@ -155,12 +150,7 @@ public class SQLTableLayout extends LinearLayout {
 
                 final int index = i;
                 if (this.mHeaderClickListener != null) {
-                    cell.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            mHeaderClickListener.onHeaderClicked(index);
-                        }
-                    });
+                    cell.setOnClickListener((view) -> mHeaderClickListener.onHeaderClicked(index));
                 }
 
                 mHeaderRow.addView(cell);
@@ -184,19 +174,15 @@ public class SQLTableLayout extends LinearLayout {
 
             int i = 1;
             for (SQLDataSet.Column column : this.data.getColumns()) {
-                LinearLayout cell = (LinearLayout) this.inflater.inflate(R.layout.table_cell, null);
+                LinearLayout cell = (LinearLayout) this.inflater.inflate(R.layout.table_cell, mHeaderRow, false);
                 TextView cellText = (TextView) cell.findViewById(R.id.cell_text);
                 cellText.setText(column.getName());
                 cellText.setTypeface(null, Typeface.BOLD);
 
                 final int index = i++;
-                cell.setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (mHeaderClickListener != null) {
-                            mHeaderClickListener.onHeaderClicked(index);
-                        }
-
+                cell.setOnClickListener((view) -> {
+                    if (mHeaderClickListener != null) {
+                        mHeaderClickListener.onHeaderClicked(index);
                     }
                 });
 
@@ -220,12 +206,9 @@ public class SQLTableLayout extends LinearLayout {
                 tableRow.addView(cell);
             }
 
-            tableRow.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (mRowClickListener != null) {
-                        mRowClickListener.onRowClicked(row);
-                    }
+            tableRow.setOnClickListener((view) -> {
+                if (mRowClickListener != null) {
+                    mRowClickListener.onRowClicked(row);
                 }
             });
 

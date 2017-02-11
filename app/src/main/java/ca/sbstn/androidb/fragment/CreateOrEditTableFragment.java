@@ -57,7 +57,7 @@ public class CreateOrEditTableFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.view = inflater.inflate(R.layout.create_edit_server, null);
+        this.view = inflater.inflate(R.layout.create_edit_server, container, false);
 
         if (this.table != null) {
             //((EditText) this.view.findViewById(R.id.server_name)).setText(this.server.getName());
@@ -71,12 +71,12 @@ public class CreateOrEditTableFragment extends Fragment {
             //this.selectedColorIndex = 0;
         }
 
-        ((Button) this.view.findViewById(R.id.save)).setOnClickListener(new View.OnClickListener() {
+        /*((Button) this.view.findViewById(R.id.save)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 saveTable();
             }
-        });
+        });*/
 
         return this.view;
     }

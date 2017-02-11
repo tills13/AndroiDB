@@ -18,6 +18,7 @@ import java.util.List;
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.activity.MainActivity;
 import ca.sbstn.androidb.adapter.ServerListAdapter;
+import ca.sbstn.androidb.query.ServerManager;
 import ca.sbstn.androidb.sql.Server;
 import io.realm.Realm;
 
@@ -62,7 +63,7 @@ public class ServerListFragment extends Fragment {
         super.onResume();
 
         ((MainActivity) getActivity()).setToolbarTitle(getResources().getString(R.string.app_name));
-        ((MainActivity) getActivity()).setToolbarColor(getResources().getColor(R.color.colorPrimary), true, true);
+        ((MainActivity) getActivity()).setToolbarColor(getResources().getColor(R.color.colorPrimary, null), true, true);
     }
 
 
@@ -81,8 +82,9 @@ public class ServerListFragment extends Fragment {
         listView.setOnItemLongClickListener((adapterView, mView, index, id) -> {
             ServerListAdapter serverListAdapter = (ServerListAdapter) adapterView.getAdapter();
             Server server = (Server) serverListAdapter.getItem(index);
+            ServerManager.setServer(server);
 
-            CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(server);
+            CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance();
             ((MainActivity) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
 
             return true;
@@ -106,7 +108,8 @@ public class ServerListFragment extends Fragment {
 
         switch (itemId) {
             case R.id.action_new: {
-                CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(null);
+                ServerManager.setServer(null);
+                CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance();
                 ((MainActivity) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
             }
         }

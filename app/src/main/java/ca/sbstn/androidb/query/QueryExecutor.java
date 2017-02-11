@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import ca.sbstn.androidb.sql.Database;
+import ca.sbstn.androidb.sql.SQLDataSet;
 import ca.sbstn.androidb.sql.Server;
 
 public class QueryExecutor {
@@ -41,6 +42,8 @@ public class QueryExecutor {
     }
 
     public static QueryExecutor forServer(Server server) {
+        if (server == null) return null;
+
         return QueryExecutor.forServer(
             server.getHost(),
             server.getPort(),
@@ -51,10 +54,12 @@ public class QueryExecutor {
     }
 
     public static QueryExecutor forServer(Server server, Database database) {
+        if (server == null) return null;
+
         return QueryExecutor.forServer(
             server.getHost(),
             server.getPort(),
-            database.getName(),
+            database == null ? "" : database.getName(),
             server.getUsername(),
             server.getPassword()
         );

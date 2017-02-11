@@ -39,21 +39,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"/>
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:textSize="@dimen/title_text_size"
-                android:textColor="@color/grey_400"
-                android:fontFamily="sans-serif-medium"
-                android:text="@string/fkeys_title"/>
-
-            <LinearLayout
-                android:id="@+id/fkeys_container"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
         </LinearLayout>
     </ScrollView>
 </android.support.v4.widget.SwipeRefreshLayout>

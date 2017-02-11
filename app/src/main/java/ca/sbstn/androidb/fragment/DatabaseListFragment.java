@@ -31,6 +31,7 @@ import ca.sbstn.androidb.activity.BaseActivity;
 import ca.sbstn.androidb.activity.ServerActivity;
 import ca.sbstn.androidb.adapter.DatabaseListAdapter;
 import ca.sbstn.androidb.query.QueryExecutor;
+import ca.sbstn.androidb.query.ServerManager;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.Server;
 import ca.sbstn.androidb.util.Colours;
@@ -47,10 +48,10 @@ public class DatabaseListFragment extends Fragment {
     @BindView(R.id.list) protected ListView listView;
     @BindView(R.id.swipe_container) protected SwipeRefreshLayout swipeRefreshLayout;
     @BindView(R.id.connection_info_container) protected LinearLayout connectionInfo;
+
     private DatabaseListAdapter adapter;
 
     protected OnDatabaseSelectedListener mListener;
-    protected Realm realm;
 
     public DatabaseListFragment() {}
 
@@ -74,14 +75,9 @@ public class DatabaseListFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         this.setHasOptionsMenu(true);
-        this.realm = Realm.getDefaultInstance();
 
-        if (getArguments() != null) {
-            String serverName = getArguments().getString(SERVER_PARAM_NAME);
-
-            this.server = this.realm.where(Server.class).equalTo("name", serverName).findFirst();
-            this.adapter = new DatabaseListAdapter(getActivity());
-        }
+        this.server = ServerManager.getServer();
+        this.adapter = new DatabaseListAdapter(getActivity());
     }
 
     @Override
@@ -105,7 +101,7 @@ public class DatabaseListFragment extends Fragment {
 
         switch (itemId) {
             case R.id.action_edit: {
-                CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance(this.server);
+                CreateOrEditServerFragment createOrEditServerFragment = CreateOrEditServerFragment.newInstance();
                 ((ServerActivity) getActivity()).putDetailsFragment(createOrEditServerFragment, true);
                 break;
             }
@@ -123,7 +119,7 @@ public class DatabaseListFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        this.layout = inflater.inflate(R.layout.database_list, null);
+        this.layout = inflater.inflate(R.layout.database_list, container, false);
         ButterKnife.bind(this, this.layout);
 
         this.swipeRefreshLayout = (SwipeRefreshLayout) this.layout.findViewById(R.id.swipe_container);
@@ -175,7 +171,7 @@ public class DatabaseListFragment extends Fragment {
         }
 
         ((BaseActivity) getActivity()).setToolbarTitle(this.server.getName());
-        ((BaseActivity) getActivity()).setToolbarColor(Color.parseColor(this.server.getColor()));
+        ((BaseActivity) getActivity()).setToolbarColor(this.server.getColor());
 
         this.connectionInfo.setBackgroundColor(Color.parseColor(this.server.getColor()));
 

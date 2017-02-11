@@ -10,12 +10,11 @@ import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.fragment.CreateOrEditDatabaseFragment;
 import ca.sbstn.androidb.fragment.CreateOrEditServerFragment;
 import ca.sbstn.androidb.fragment.DatabaseListFragment;
+import ca.sbstn.androidb.query.ServerManager;
 import ca.sbstn.androidb.sql.Database;
 import ca.sbstn.androidb.sql.Server;
-import io.realm.Realm;
 
 public class ServerActivity extends BaseActivity implements DatabaseListFragment.OnDatabaseSelectedListener {
-    public static final String SERVER_PARAM_NAME = "PARAM_NAME";
     protected Server server;
 
     @Override
@@ -23,21 +22,12 @@ public class ServerActivity extends BaseActivity implements DatabaseListFragment
         setContentView(R.layout.layout_main);
         super.onCreate(savedInstanceState);
 
-        Realm realm = Realm.getDefaultInstance();
-        String serverName = getIntent().getStringExtra(SERVER_PARAM_NAME);
-
-        this.server = realm.where(Server.class).equalTo("name", serverName).findFirst();
+        ServerManager.setDatabase(null);
+        this.server = ServerManager.getServer();
         this.setToolbarColor(this.server.getColor(), true);
 
         DatabaseListFragment databaseListFragment = DatabaseListFragment.newInstance(this.server);
         this.putContextFragment(databaseListFragment, false);
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(SERVER_PARAM_NAME, this.server.getName());
-
-        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -56,7 +46,7 @@ public class ServerActivity extends BaseActivity implements DatabaseListFragment
             }
 
             case R.id.action_new: {
-                CreateOrEditDatabaseFragment createOrEditDatabaseFragment = CreateOrEditDatabaseFragment.newInstance(this.server);
+                CreateOrEditDatabaseFragment createOrEditDatabaseFragment = CreateOrEditDatabaseFragment.newInstance(this.server, null);
                 this.putContextFragment(createOrEditDatabaseFragment, true);
             }
         }
@@ -65,24 +55,19 @@ public class ServerActivity extends BaseActivity implements DatabaseListFragment
     }
 
     public Server getServer() {
-        return this.getServer(true);
-    }
-
-    public Server getServer(boolean reload) {
         return this.server;
     }
 
     @Override
     public void onDatabaseSelected(Database database) {
         Intent intent = new Intent(this, DatabaseActivity.class);
-        intent.putExtra(DatabaseActivity.SERVER_PARAM_NAME, this.server.getName());
-        intent.putExtra(DatabaseActivity.DATABASE_PARAM, database.getName());
+        ServerManager.setDatabase(database);
         startActivity(intent);
     }
 
     @Override
     public void onDatabaseLongPressed(Database database) {
-        CreateOrEditDatabaseFragment createOrEditDatabaseFragment = CreateOrEditDatabaseFragment.newInstance(database);
+        CreateOrEditDatabaseFragment createOrEditDatabaseFragment = CreateOrEditDatabaseFragment.newInstance(this.server, database);
         this.putDetailsFragment(createOrEditDatabaseFragment, true);
     }
 }

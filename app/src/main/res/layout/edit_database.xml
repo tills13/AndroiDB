@@ -8,95 +8,80 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="@dimen/container_padding"
         android:orientation="vertical">
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textSize="@dimen/title_text_size"
-            android:textColor="@color/grey_400"
-            android:fontFamily="sans-serif-medium"
-            android:text="@string/database_title_name" />
 
-        <EditText
-            android:id="@+id/database_name"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_name"
-            android:singleLine="true"/>
+            android:layout_marginBottom="8dp"
+            style="@style/AndroiDB.TextInputLayoutStyle">
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/database_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/database_name"
+                android:inputType="text"
+                style="@style/AndroiDB.EditTextStyle" />
+        </android.support.design.widget.TextInputLayout>
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textSize="@dimen/title_text_size"
-            android:textColor="@color/grey_400"
-            android:fontFamily="sans-serif-medium"
-            android:text="@string/database_title_owner" />
-
-        <AutoCompleteTextView
-            android:id="@+id/database_owner"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/db_owner_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_owner"
-            android:singleLine="true"/>
+            android:layout_marginBottom="8dp"
+            style="@style/AndroiDB.TextInputLayoutStyle">
+            <AutoCompleteTextView
+                android:id="@+id/database_owner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/database_owner"
+                android:inputType="text"
+                style="@style/AndroiDB.EditTextStyle" />
+        </android.support.design.widget.TextInputLayout>
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textSize="@dimen/title_text_size"
-            android:textColor="@color/grey_400"
-            android:fontFamily="sans-serif-medium"
-            android:text="@string/database_title_comment" />
-
-        <EditText
-            android:id="@+id/database_comment"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_comment"
-            android:singleLine="false"/>
+            android:layout_marginBottom="8dp"
+            style="@style/AndroiDB.TextInputLayoutStyle">
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/database_comment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/database_comment"
+                android:inputType="text"
+                style="@style/AndroiDB.EditTextStyle" />
+        </android.support.design.widget.TextInputLayout>
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textSize="@dimen/title_text_size"
-            android:textColor="@color/grey_400"
-            android:fontFamily="sans-serif-medium"
-            android:text="@string/database_title_tablespace" />
-
-        <AutoCompleteTextView
-            android:id="@+id/database_tablespace"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/db_tablespace_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_tablespace"
-            android:singleLine="true"/>
+            android:layout_marginBottom="8dp"
+            style="@style/AndroiDB.TextInputLayoutStyle">
+            <AutoCompleteTextView
+                android:id="@+id/database_tablespace"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/database_tablespace"
+                android:inputType="text"
+                style="@style/AndroiDB.EditTextStyle" />
+        </android.support.design.widget.TextInputLayout>
 
-        <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textSize="@dimen/title_text_size"
-            android:textColor="@color/grey_400"
-            android:fontFamily="sans-serif-medium"
-            android:text="@string/database_title_template" />
-
-        <AutoCompleteTextView
-            android:id="@+id/database_template"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/db_template_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_template"
-            android:singleLine="true"/>
+            android:layout_marginBottom="8dp"
+            style="@style/AndroiDB.TextInputLayoutStyle">
+            <AutoCompleteTextView
+                android:id="@+id/database_template"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/database_template"
+                android:inputType="text"
+                style="@style/AndroiDB.EditTextStyle" />
+        </android.support.design.widget.TextInputLayout>
     </LinearLayout>
 </ScrollView>

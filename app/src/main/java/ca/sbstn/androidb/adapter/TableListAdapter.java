@@ -16,29 +16,27 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import ca.sbstn.androidb.R;
 import ca.sbstn.androidb.entity.Schema;
 import ca.sbstn.androidb.sql.Table;
 
-/**
- * Created by tills13 on 15-06-26.
- */
 public class TableListAdapter extends BaseAdapter {
-    public Context context;
-    public List<Table> tables;
+    private Context context;
+    private List<Table> tables;
 
-    public Map<String, Boolean> isCollapsed;
-    public Map<String, List<Table>> headers;
-    public Map<String, List<Table>> finalHeaders;
+    private Map<String, Boolean> isCollapsed;
+    private Map<String, List<Table>> headers;
+    private Map<String, List<Table>> finalHeaders;
 
-    public boolean showTables;
-    public boolean showViews;
-    public boolean showIndexes;
-    public boolean showSequences;
+    private boolean showTables;
+    private boolean showViews;
+    private boolean showIndexes;
+    private boolean showSequences;
 
-    public int sortType; // 0 = name, 1 = type, 2 = schema
+    private int sortType; // 0 = name, 1 = type, 2 = schema
 
     public TableListAdapter(Context context) {
         super();
@@ -59,21 +57,16 @@ public class TableListAdapter extends BaseAdapter {
     }
 
     public void sort() {
-        final int finalSortType = sortType;
-
         Table[] tablesArray = new Table[this.tables.size()];
         tablesArray = this.tables.toArray(tablesArray);
 
-        Arrays.sort(tablesArray, new Comparator<Table>() {
-            @Override
-            public int compare(Table t1, Table t2) {
-                if (finalSortType == 0) {
-                    return t1.getName().compareTo(t2.getName());
-                } else if (finalSortType == 1) {
-                    return t1.getTypeString().compareTo(t2.getTypeString());
-                } else {
-                    return t1.getSchema().compareTo(t2.getSchema());
-                }
+        Arrays.sort(tablesArray, (t1, t2) -> {
+            if (sortType == 0) {
+                return t1.getName().compareTo(t2.getName());
+            } else if (sortType == 1) {
+                return t1.getTypeString().compareTo(t2.getTypeString());
+            } else {
+                return t1.getSchema().compareTo(t2.getSchema());
             }
         });
 
@@ -102,7 +95,7 @@ public class TableListAdapter extends BaseAdapter {
                     ((ImageView) header.findViewById(R.id.icon)).setImageDrawable(this.context.getResources().getDrawable(R.drawable.ic_keyboard_arrow_up_white_48dp));
                 }
 
-                ((TextView) header.findViewById(R.id.secondary_title)).setText(String.format("%d items", tablesUnderHeader.size()));
+                ((TextView) header.findViewById(R.id.secondary_title)).setText(String.format(Locale.getDefault(), "%d items", tablesUnderHeader.size()));
             }
 
             return header;
@@ -137,7 +130,6 @@ public class TableListAdapter extends BaseAdapter {
     }
 
     public void applyFilters() {
-        Log.e("BLAH", "APPLY FIlTER");
         this.finalHeaders.clear();
 
         for (String key : this.headers.keySet()) {
